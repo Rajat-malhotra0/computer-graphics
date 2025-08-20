@@ -259,8 +259,21 @@
             }
 
             @media (max-width: 768px) {
+                body {
+                    padding: 10px;
+                }
+
+                .container {
+                    border-radius: 10px;
+                }
+
                 .main-content {
                     grid-template-columns: 1fr;
+                }
+
+                .input-section,
+                .output-section {
+                    padding: 20px;
                 }
 
                 .input-section {
@@ -270,19 +283,132 @@
 
                 .coordinate-row {
                     grid-template-columns: 1fr;
+                    gap: 10px;
+                }
+
+                .header {
+                    padding: 20px;
                 }
 
                 .header h1 {
-                    font-size: 2rem;
+                    font-size: 1.8rem;
+                    margin-bottom: 8px;
                 }
 
+                .header p {
+                    font-size: 1rem;
+                }
+
+                /* Mobile-optimized buttons */
+                .button-group {
+                    gap: 8px;
+                }
+
+                .btn {
+                    padding: 14px 20px;
+                    font-size: 14px;
+                    border-radius: 6px;
+                }
+
+                /* Mobile table - make it scrollable */
                 .results-table {
+                    font-size: 12px;
+                    display: block;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    -webkit-overflow-scrolling: touch;
+                }
+
+                .results-table thead,
+                .results-table tbody,
+                .results-table th,
+                .results-table td,
+                .results-table tr {
+                    display: block;
+                }
+
+                .results-table thead tr {
+                    position: absolute;
+                    top: -9999px;
+                    left: -9999px;
+                }
+
+                .results-table tr {
+                    border: 1px solid #e9ecef;
+                    margin-bottom: 10px;
+                    border-radius: 8px;
+                    background: white;
+                    padding: 15px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+
+                .results-table td {
+                    border: none;
+                    position: relative;
+                    padding: 8px 0 8px 35%;
+                    text-align: left;
+                    white-space: normal;
+                }
+
+                .results-table td:before {
+                    content: attr(data-label) ": ";
+                    position: absolute;
+                    left: 6px;
+                    width: 30%;
+                    padding-right: 10px;
+                    white-space: nowrap;
+                    font-weight: bold;
+                    color: #34495e;
+                }
+
+                /* Summary stats mobile optimization */
+                .summary-stats {
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                }
+
+                .stat-value {
+                    font-size: 1.2rem;
+                }
+
+                .stat-label {
+                    font-size: 0.8rem;
+                }
+
+                /* Mobile input optimization */
+                .input-group input {
+                    font-size: 16px; /* Prevent zoom on iOS */
+                    padding: 14px 15px;
+                }
+
+                .input-group label {
                     font-size: 14px;
                 }
+            }
 
-                .results-table th,
-                .results-table td {
-                    padding: 10px 8px;
+            /* Extra small mobile devices */
+            @media (max-width: 480px) {
+                .header h1 {
+                    font-size: 1.5rem;
+                }
+
+                .header p {
+                    font-size: 0.9rem;
+                }
+
+                .input-section,
+                .output-section {
+                    padding: 15px;
+                }
+
+                .summary-stats {
+                    grid-template-columns: 1fr;
+                    text-align: center;
+                }
+
+                .btn {
+                    padding: 12px 16px;
+                    font-size: 13px;
                 }
             }
 
@@ -503,11 +629,11 @@
                         );
                         tableHTML += `
                         <tr>
-                            <td>${i}</td>
-                            <td>${x.toFixed(2)}</td>
-                            <td>${y.toFixed(2)}</td>
-                            <td>${Math.round(x)}</td>
-                            <td>${Math.round(y)}</td>
+                            <td data-label="Step">${i}</td>
+                            <td data-label="X Coordinate">${x.toFixed(2)}</td>
+                            <td data-label="Y Coordinate">${y.toFixed(2)}</td>
+                            <td data-label="Rounded X">${Math.round(x)}</td>
+                            <td data-label="Rounded Y">${Math.round(y)}</td>
                         </tr>
                     `;
                     }

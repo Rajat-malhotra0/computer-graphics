@@ -1,7 +1,4 @@
 # Build outputs in root (ignore these)
-dda.js
-dda.wasm
-
 # Keep dist/ folder for Netlify deployment
 # dist/ - commented out to allow committing production build
 
