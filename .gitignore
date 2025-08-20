@@ -1,7 +1,9 @@
-# Build outputs (allow dist/ for Netlify deployment)
+# Build outputs in root (ignore these)
 dda.js
 dda.wasm
-# dist/ - commented out to allow committing for deployment
+
+# Keep dist/ folder for Netlify deployment
+# dist/ - commented out to allow committing production build
 
 # Node modules
 node_modules/
