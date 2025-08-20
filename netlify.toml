@@ -1,6 +1,6 @@
 [build]
-  # Build command to compile WebAssembly
-  command = "./build.sh"
+  # Skip build since we'll commit pre-built files
+  command = "echo 'Using pre-built files'"
   
   # Directory to publish (where built files are located)
   publish = "dist"

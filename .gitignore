@@ -1,7 +1,7 @@
-# Build outputs
+# Build outputs (allow dist/ for Netlify deployment)
 dda.js
 dda.wasm
-dist/
+# dist/ - commented out to allow committing for deployment
 
 # Node modules
 node_modules/
