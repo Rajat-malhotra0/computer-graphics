@@ -1,0 +1,51 @@
+# Build outputs
+dda.js
+dda.wasm
+dist/
+
+# Node modules
+node_modules/
+.npm
+.cache/
+
+# Development files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Emscripten cache
+.emscripten_cache/
+.emscripten_ports/
+
+# Build artifacts
+main.out
+a.out
+*.o
+*.obj
+
+# Netlify
+.netlify/

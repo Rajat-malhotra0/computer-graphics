@@ -1,0 +1,33 @@
+{
+    "name": "dda-algorithm-wasm",
+    "version": "1.0.0",
+    "description": "DDA Line Drawing Algorithm implemented in WebAssembly",
+    "main": "index.html",
+    "scripts": {
+        "build": "./build.sh",
+        "dev": "python3 -m http.server 8080",
+        "clean": "rm -rf dist/ dda.js dda.wasm"
+    },
+    "keywords": [
+        "dda",
+        "algorithm",
+        "webassembly",
+        "graphics",
+        "line-drawing",
+        "computer-graphics"
+    ],
+    "author": "Graphics Algorithm Developer",
+    "license": "MIT",
+    "devDependencies": {},
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yourusername/dda-algorithm-wasm"
+    },
+    "homepage": "https://your-app-name.netlify.app",
+    "bugs": {
+        "url": "https://github.com/yourusername/dda-algorithm-wasm/issues"
+    }
+}
