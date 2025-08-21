@@ -25,6 +25,10 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
     float dx, dy, x_increment, y_increment;
     float xi = x1, yi = y1;
 
+#ifdef __EMSCRIPTEN__
+    printf("DDA: Input coordinates (%d,%d) to (%d,%d)\n", x1, y1, x2, y2);
+#endif
+
     dx = x2 - x1;
     dy = y2 - y1;
 
@@ -34,9 +38,17 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
         *total_points = 1;
         point *points = (point *)malloc(sizeof(point));
         if (!points)
+        {
+#ifdef __EMSCRIPTEN__
+            printf("DDA: Failed to allocate memory for single point\n");
+#endif
             return NULL;
+        }
         points[0].x = x1;
         points[0].y = y1;
+#ifdef __EMSCRIPTEN__
+        printf("DDA: Single point case - allocated 1 point\n");
+#endif
         return points;
     }
 
@@ -51,20 +63,40 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
 
     *total_points = iterations + 1;
 
-    // Add safety check for excessive iterations
-    if (*total_points > 100000 || *total_points < 1)
+#ifdef __EMSCRIPTEN__
+    printf("DDA: Calculated iterations=%d, total_points=%d\n", iterations, *total_points);
+#endif
+
+    // Add stricter safety checks
+    if (*total_points > 50000 || *total_points < 1 || iterations < 0)
     {
+#ifdef __EMSCRIPTEN__
+        printf("DDA: Invalid total_points=%d or iterations=%d\n", *total_points, iterations);
+#endif
         *total_points = 0;
         return NULL;
     }
 
+    // Calculate memory requirement
+    size_t memory_needed = *total_points * sizeof(point);
+#ifdef __EMSCRIPTEN__
+    printf("DDA: Attempting to allocate %zu bytes for %d points\n", memory_needed, *total_points);
+#endif
+
     // Allocate memory with error checking
-    point *points = (point *)malloc(*total_points * sizeof(point));
+    point *points = (point *)malloc(memory_needed);
     if (!points)
     {
+#ifdef __EMSCRIPTEN__
+        printf("DDA: Failed to allocate %zu bytes for points array\n", memory_needed);
+#endif
         *total_points = 0;
         return NULL;
     }
+
+#ifdef __EMSCRIPTEN__
+    printf("DDA: Successfully allocated memory at %p\n", points);
+#endif
 
     // Initialize allocated memory to zero
     for (int i = 0; i < *total_points; i++)
@@ -75,6 +107,10 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
 
     x_increment = dx / (float)iterations;
     y_increment = dy / (float)iterations;
+
+#ifdef __EMSCRIPTEN__
+    printf("DDA: Increments - x: %f, y: %f\n", x_increment, y_increment);
+#endif
 
     count = 0;
     points[count].x = xi;
@@ -90,6 +126,10 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
         points[count].y = yi;
         count++;
     }
+
+#ifdef __EMSCRIPTEN__
+    printf("DDA: Successfully calculated %d points\n", count);
+#endif
 
     return points;
 }

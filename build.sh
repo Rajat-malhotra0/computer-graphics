@@ -23,12 +23,14 @@ emcc main.c -o dda.js \
     -s MODULARIZE=0 \
     -s EXPORT_NAME="Module" \
     -s SINGLE_FILE=0 \
-    -s INITIAL_MEMORY=1048576 \
-    -s MAXIMUM_MEMORY=16777216 \
-    -s STACK_SIZE=65536 \
+    -s INITIAL_MEMORY=2097152 \
+    -s MAXIMUM_MEMORY=33554432 \
+    -s STACK_SIZE=131072 \
+    -s TOTAL_STACK=131072 \
+    -s MALLOC=emmalloc \
     -O2 \
     -s ASSERTIONS=1 \
-    -s SAFE_HEAP=1
+    -s SAFE_HEAP=0
 
 # Check if compilation was successful
 if [ $? -eq 0 ]; then

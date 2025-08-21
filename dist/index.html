@@ -287,7 +287,7 @@
                 border-radius: 8px;
                 padding: 15px;
                 margin-bottom: 20px;
-                font-family: 'Courier New', monospace;
+                font-family: "Courier New", monospace;
                 font-size: 12px;
                 max-height: 200px;
                 overflow-y: auto;
@@ -604,26 +604,26 @@
             const DEBUG = true;
             let debugLogs = [];
 
-            function debugLog(message, type = 'info') {
+            function debugLog(message, type = "info") {
                 const timestamp = new Date().toLocaleTimeString();
                 const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
-                
+
                 debugLogs.push(logEntry);
-                
+
                 // Keep only last 20 logs
                 if (debugLogs.length > 20) {
                     debugLogs.shift();
                 }
-                
+
                 // Update debug panel
-                const debugOutput = document.getElementById('debugOutput');
+                const debugOutput = document.getElementById("debugOutput");
                 if (debugOutput) {
-                    debugOutput.innerHTML = debugLogs.map(log => 
-                        `<div class="debug-log">${log}</div>`
-                    ).join('');
+                    debugOutput.innerHTML = debugLogs
+                        .map((log) => `<div class="debug-log">${log}</div>`)
+                        .join("");
                     debugOutput.scrollTop = debugOutput.scrollHeight;
                 }
-                
+
                 // Also log to console
                 console.log(logEntry);
             }
@@ -631,18 +631,38 @@
             var Module = {
                 onRuntimeInitialized: function () {
                     debugLog("WebAssembly runtime initialized successfully");
-                    debugLog(`Available Module functions: ${Object.keys(Module).filter(key => key.startsWith('_')).join(', ')}`);
-                    updateStatus("ready", "WebAssembly module loaded successfully!");
+                    debugLog(
+                        `Available Module functions: ${Object.keys(Module)
+                            .filter((key) => key.startsWith("_"))
+                            .join(", ")}`
+                    );
+                    
+                    // Log memory information
+                    if (Module.HEAPF32) {
+                        debugLog(`Initial heap size: HEAPF32.length=${Module.HEAPF32.length} (${Module.HEAPF32.length * 4} bytes)`);
+                    }
+                    if (Module.HEAP8) {
+                        debugLog(`Initial heap size: HEAP8.length=${Module.HEAP8.length} bytes`);
+                    }
+                    
+                    updateStatus(
+                        "ready",
+                        "WebAssembly module loaded successfully!"
+                    );
                 },
-                onAbort: function(what) {
-                    debugLog(`WebAssembly aborted: ${what}`, 'error');
+                onAbort: function (what) {
+                    debugLog(`WebAssembly aborted: ${what}`, "error");
                     updateStatus("error", `WebAssembly error: ${what}`);
                 },
-                print: function(text) {
-                    debugLog(`WASM Output: ${text}`, 'wasm');
+                print: function (text) {
+                    debugLog(`WASM Output: ${text}`, "wasm");
                 },
-                printErr: function(text) {
-                    debugLog(`WASM Error: ${text}`, 'error');
+                printErr: function (text) {
+                    debugLog(`WASM Error: ${text}`, "error");
+                },
+                onOutOfMemory: function() {
+                    debugLog("WebAssembly out of memory!", "error");
+                    updateStatus("error", "WebAssembly ran out of memory");
                 }
             };
 
@@ -659,7 +679,7 @@
             }
 
             function showLoading(show) {
-                debugLog(`Loading spinner: ${show ? 'show' : 'hide'}`);
+                debugLog(`Loading spinner: ${show ? "show" : "hide"}`);
                 const spinner = document.getElementById("loadingSpinner");
                 spinner.style.display = show ? "block" : "none";
             }
@@ -667,12 +687,17 @@
             function validateInput(inputId, value) {
                 debugLog(`Validating ${inputId}: ${value}`);
                 const input = document.getElementById(inputId);
-                const errorElement = document.getElementById(inputId + "-error");
+                const errorElement = document.getElementById(
+                    inputId + "-error"
+                );
                 const MAX_VALUE = 5000;
                 const MIN_VALUE = -5000;
 
                 if (value < MIN_VALUE || value > MAX_VALUE || isNaN(value)) {
-                    debugLog(`Validation failed for ${inputId}: ${value}`, 'error');
+                    debugLog(
+                        `Validation failed for ${inputId}: ${value}`,
+                        "error"
+                    );
                     input.classList.add("error");
                     errorElement.classList.add("show");
                     return false;
@@ -686,13 +711,15 @@
 
             function validateAllInputs() {
                 debugLog("Starting comprehensive input validation");
-                
+
                 const x1 = parseInt(document.getElementById("x1").value);
                 const y1 = parseInt(document.getElementById("y1").value);
                 const x2 = parseInt(document.getElementById("x2").value);
                 const y2 = parseInt(document.getElementById("y2").value);
 
-                debugLog(`Input values: start(${x1}, ${y1}), end(${x2}, ${y2})`);
+                debugLog(
+                    `Input values: start(${x1}, ${y1}), end(${x2}, ${y2})`
+                );
 
                 const isX1Valid = validateInput("x1", x1);
                 const isY1Valid = validateInput("y1", y1);
@@ -704,38 +731,53 @@
                 const dy = Math.abs(y2 - y1);
                 const totalPoints = Math.max(dx, dy) + 1;
 
-                debugLog(`Expected calculation: dx=${dx}, dy=${dy}, totalPoints=${totalPoints}`);
+                debugLog(
+                    `Expected calculation: dx=${dx}, dy=${dy}, totalPoints=${totalPoints}`
+                );
 
                 if (totalPoints > 25000) {
-                    debugLog(`Too many points: ${totalPoints} > 25000`, 'error');
+                    debugLog(
+                        `Too many points: ${totalPoints} > 25000`,
+                        "error"
+                    );
                     ["x1", "y1", "x2", "y2"].forEach((id) => {
                         const input = document.getElementById(id);
-                        const errorElement = document.getElementById(id + "-error");
+                        const errorElement = document.getElementById(
+                            id + "-error"
+                        );
                         input.classList.add("error");
-                        errorElement.textContent = "Coordinate difference too large (max 25000 points)";
+                        errorElement.textContent =
+                            "Coordinate difference too large (max 25000 points)";
                         errorElement.classList.add("show");
                     });
                     return false;
                 } else {
                     // Reset error messages to default
                     ["x1", "y1", "x2", "y2"].forEach((id) => {
-                        const errorElement = document.getElementById(id + "-error");
-                        errorElement.textContent = "Value must be between -5000 and 5000";
+                        const errorElement = document.getElementById(
+                            id + "-error"
+                        );
+                        errorElement.textContent =
+                            "Value must be between -5000 and 5000";
                     });
                 }
 
-                const allValid = isX1Valid && isY1Valid && isX2Valid && isY2Valid;
+                const allValid =
+                    isX1Valid && isY1Valid && isX2Valid && isY2Valid;
                 debugLog(`Overall validation result: ${allValid}`);
                 return allValid;
             }
 
             function calculateDDA() {
                 debugLog("=== Starting DDA Calculation ===");
-                
+
                 // Check if WebAssembly module is ready
                 if (!Module._calculate_dda) {
-                    debugLog("WebAssembly module not ready", 'error');
-                    updateStatus("error", "WebAssembly module not loaded yet. Please wait...");
+                    debugLog("WebAssembly module not ready", "error");
+                    updateStatus(
+                        "error",
+                        "WebAssembly module not loaded yet. Please wait..."
+                    );
                     return;
                 }
 
@@ -743,8 +785,11 @@
 
                 // Validate inputs
                 if (!validateAllInputs()) {
-                    debugLog("Input validation failed", 'error');
-                    updateStatus("error", "Please fix the input errors before calculating.");
+                    debugLog("Input validation failed", "error");
+                    updateStatus(
+                        "error",
+                        "Please fix the input errors before calculating."
+                    );
                     return;
                 }
 
@@ -756,38 +801,93 @@
                 const x2 = parseInt(document.getElementById("x2").value);
                 const y2 = parseInt(document.getElementById("y2").value);
 
-                debugLog(`Final input coordinates: (${x1}, ${y1}) to (${x2}, ${y2})`);
+                debugLog(
+                    `Final input coordinates: (${x1}, ${y1}) to (${x2}, ${y2})`
+                );
 
                 try {
                     // Step 1: Allocate memory for total points
                     debugLog("Step 1: Allocating memory for total points");
                     const totalPointsPtr = Module._malloc(4);
-                    
+
                     if (!totalPointsPtr || totalPointsPtr === 0) {
-                        debugLog(`Memory allocation failed: ${totalPointsPtr}`, 'error');
-                        updateStatus("error", "Failed to allocate memory for calculation");
+                        debugLog(
+                            `Memory allocation failed: ${totalPointsPtr}`,
+                            "error"
+                        );
+                        updateStatus(
+                            "error",
+                            "Failed to allocate memory for calculation"
+                        );
                         return;
                     }
-                    
-                    debugLog(`Memory allocated successfully at: ${totalPointsPtr}`);
+
+                    debugLog(
+                        `Memory allocated successfully at: ${totalPointsPtr}`
+                    );
 
                     // Step 2: Call DDA calculation function
                     debugLog("Step 2: Calling WebAssembly DDA function");
-                    const pointsPtr = Module._calculate_dda(x1, y1, x2, y2, totalPointsPtr);
                     
-                    debugLog(`DDA function returned points pointer: ${pointsPtr}`);
+                    // Pre-check memory state
+                    if (Module.HEAPF32) {
+                        debugLog(`Pre-call heap state: HEAPF32.length=${Module.HEAPF32.length}, bytes=${Module.HEAPF32.length * 4}`);
+                    }
+                    
+                    // Try a small test allocation first
+                    debugLog("Step 2a: Testing small memory allocation");
+                    const testPtr = Module._malloc(64); // Allocate 64 bytes for test
+                    if (testPtr) {
+                        debugLog(`Test allocation successful at: ${testPtr}`);
+                        Module._free(testPtr);
+                        debugLog("Test allocation freed successfully");
+                    } else {
+                        debugLog("Test allocation failed - memory may be exhausted", 'error');
+                        Module._free(totalPointsPtr);
+                        updateStatus("error", "Memory exhausted - cannot allocate space for calculation");
+                        return;
+                    }
+                    
+                    debugLog("Step 2b: Calling actual DDA function");
+                    let pointsPtr;
+                    try {
+                        pointsPtr = Module._calculate_dda(
+                            x1,
+                            y1,
+                            x2,
+                            y2,
+                            totalPointsPtr
+                        );
+                        debugLog(`DDA function call completed, pointer: ${pointsPtr}`);
+                    } catch (wasmError) {
+                        debugLog(`WebAssembly function call failed: ${wasmError.message}`, 'error');
+                        debugLog(`Error type: ${wasmError.name}`, 'error');
+                        Module._free(totalPointsPtr);
+                        updateStatus("error", `WebAssembly call failed: ${wasmError.message}`);
+                        return;
+                    }
+
+                    debugLog(
+                        `DDA function returned points pointer: ${pointsPtr}`
+                    );
 
                     // Step 3: Read total points
                     debugLog("Step 3: Reading total points from memory");
                     const totalPoints = Module.getValue(totalPointsPtr, "i32");
-                    
+
                     debugLog(`Total points calculated: ${totalPoints}`);
 
                     // Step 4: Validate calculation results
                     if (pointsPtr === 0 || totalPoints === 0) {
-                        debugLog(`Calculation failed - Points pointer: ${pointsPtr}, Total points: ${totalPoints}`, 'error');
+                        debugLog(
+                            `Calculation failed - Points pointer: ${pointsPtr}, Total points: ${totalPoints}`,
+                            "error"
+                        );
                         Module._free(totalPointsPtr);
-                        updateStatus("error", `Calculation failed - Points=${totalPoints}, Ptr=${pointsPtr}`);
+                        updateStatus(
+                            "error",
+                            `Calculation failed - Points=${totalPoints}, Ptr=${pointsPtr}`
+                        );
                         document.getElementById("resultsContainer").innerHTML =
                             '<div class="no-results">Calculation failed. Check debug log for details.</div>';
                         return;
@@ -795,10 +895,16 @@
 
                     // Step 5: Additional safety checks
                     if (totalPoints > 50000) {
-                        debugLog(`Too many points for processing: ${totalPoints}`, 'error');
+                        debugLog(
+                            `Too many points for processing: ${totalPoints}`,
+                            "error"
+                        );
                         Module._free(pointsPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus("error", `Too many points: ${totalPoints}. Use smaller coordinates.`);
+                        updateStatus(
+                            "error",
+                            `Too many points: ${totalPoints}. Use smaller coordinates.`
+                        );
                         document.getElementById("resultsContainer").innerHTML =
                             '<div class="no-results">Coordinate difference too large. Please use smaller values.</div>';
                         return;
@@ -819,7 +925,9 @@
                         slope = slopeValue.toFixed(6);
                     }
 
-                    debugLog(`Line properties: length=${length}, slope=${slope}`);
+                    debugLog(
+                        `Line properties: length=${length}, slope=${slope}`
+                    );
 
                     // Get point struct size
                     debugLog("Step 5: Getting point structure size");
@@ -827,17 +935,21 @@
                     debugLog(`Point struct size: ${pointSize} bytes`);
 
                     if (!pointSize || pointSize <= 0) {
-                        debugLog(`Invalid point size: ${pointSize}`, 'error');
+                        debugLog(`Invalid point size: ${pointSize}`, "error");
                         throw new Error("Invalid point structure size");
                     }
 
                     // Update summary card
                     debugLog("Step 6: Updating UI with results");
-                    document.getElementById("summaryTitle").textContent = `Line from (${x1}, ${y1}) to (${x2}, ${y2})`;
-                    document.getElementById("totalPoints").textContent = totalPoints;
+                    document.getElementById(
+                        "summaryTitle"
+                    ).textContent = `Line from (${x1}, ${y1}) to (${x2}, ${y2})`;
+                    document.getElementById("totalPoints").textContent =
+                        totalPoints;
                     document.getElementById("lineLength").textContent = length;
                     document.getElementById("lineSlope").textContent = slope;
-                    document.getElementById("summaryCard").style.display = "block";
+                    document.getElementById("summaryCard").style.display =
+                        "block";
 
                     // Create results table
                     debugLog("Step 7: Building results table");
@@ -865,67 +977,105 @@
                         try {
                             // Calculate memory address
                             const pointAddress = pointsPtr + i * pointSize;
-                            
+
                             // Enhanced memory bounds checking
                             if (pointAddress < 0) {
-                                throw new Error(`Negative memory address: ${pointAddress}`);
+                                throw new Error(
+                                    `Negative memory address: ${pointAddress}`
+                                );
                             }
 
                             // Check if we have access to heap arrays
                             if (!Module.HEAPF32) {
-                                throw new Error("HEAPF32 not available - check WebAssembly exports");
+                                throw new Error(
+                                    "HEAPF32 not available - check WebAssembly exports"
+                                );
                             }
 
                             const heapSizeBytes = Module.HEAPF32.length * 4; // Each float32 is 4 bytes
-                            if (pointAddress + 8 > heapSizeBytes) { // 8 bytes for x,y floats
-                                throw new Error(`Memory address ${pointAddress} + 8 exceeds heap size ${heapSizeBytes}`);
+                            if (pointAddress + 8 > heapSizeBytes) {
+                                // 8 bytes for x,y floats
+                                throw new Error(
+                                    `Memory address ${pointAddress} + 8 exceeds heap size ${heapSizeBytes}`
+                                );
                             }
 
                             // Read coordinates
-                            const currentX = Module.getValue(pointAddress, "float");
-                            const currentY = Module.getValue(pointAddress + 4, "float");
+                            const currentX = Module.getValue(
+                                pointAddress,
+                                "float"
+                            );
+                            const currentY = Module.getValue(
+                                pointAddress + 4,
+                                "float"
+                            );
 
                             // Validate coordinates
                             if (!isFinite(currentX) || !isFinite(currentY)) {
-                                throw new Error(`Invalid coordinates: (${currentX}, ${currentY})`);
+                                throw new Error(
+                                    `Invalid coordinates: (${currentX}, ${currentY})`
+                                );
                             }
 
                             // Get next coordinates if available
                             let nextX = "—";
                             let nextY = "—";
                             if (i < totalPoints - 1) {
-                                const nextAddress = pointsPtr + (i + 1) * pointSize;
+                                const nextAddress =
+                                    pointsPtr + (i + 1) * pointSize;
                                 if (nextAddress + 8 <= heapSizeBytes) {
                                     try {
-                                        const nextXVal = Module.getValue(nextAddress, "float");
-                                        const nextYVal = Module.getValue(nextAddress + 4, "float");
-                                        if (isFinite(nextXVal) && isFinite(nextYVal)) {
+                                        const nextXVal = Module.getValue(
+                                            nextAddress,
+                                            "float"
+                                        );
+                                        const nextYVal = Module.getValue(
+                                            nextAddress + 4,
+                                            "float"
+                                        );
+                                        if (
+                                            isFinite(nextXVal) &&
+                                            isFinite(nextYVal)
+                                        ) {
                                             nextX = nextXVal.toFixed(2);
                                             nextY = nextYVal.toFixed(2);
                                         }
                                     } catch (e) {
-                                        debugLog(`Warning: Could not read next point ${i+1}: ${e.message}`, 'warn');
+                                        debugLog(
+                                            `Warning: Could not read next point ${
+                                                i + 1
+                                            }: ${e.message}`,
+                                            "warn"
+                                        );
                                     }
                                 }
                             }
 
-                            const roundedCoords = `(${Math.round(currentX)}, ${Math.round(currentY)})`;
+                            const roundedCoords = `(${Math.round(
+                                currentX
+                            )}, ${Math.round(currentY)})`;
 
                             tableHTML += `
                         <tr>
                             <td data-label="Step">${i}</td>
-                            <td data-label="Current X">${currentX.toFixed(2)}</td>
-                            <td data-label="Current Y">${currentY.toFixed(2)}</td>
+                            <td data-label="Current X">${currentX.toFixed(
+                                2
+                            )}</td>
+                            <td data-label="Current Y">${currentY.toFixed(
+                                2
+                            )}</td>
                             <td data-label="Next X">${nextX}</td>
                             <td data-label="Next Y">${nextY}</td>
                             <td data-label="Rounded Coordinates">${roundedCoords}</td>
                         </tr>
                     `;
                             successfulPoints++;
-
                         } catch (error) {
                             errorCount++;
-                            debugLog(`Error reading point ${i}: ${error.message}`, 'error');
+                            debugLog(
+                                `Error reading point ${i}: ${error.message}`,
+                                "error"
+                            );
                             tableHTML += `
                         <tr>
                             <td colspan="6" style="background-color: #f8d7da; color: #721c24;">
@@ -933,10 +1083,13 @@
                             </td>
                         </tr>
                     `;
-                            
+
                             // Stop if we have too many errors
                             if (errorCount > 5) {
-                                debugLog("Too many read errors, stopping point processing", 'error');
+                                debugLog(
+                                    "Too many read errors, stopping point processing",
+                                    "error"
+                                );
                                 break;
                             }
                         }
@@ -947,23 +1100,31 @@
                     </table>
                 `;
 
-                    debugLog(`Successfully read ${successfulPoints}/${totalPoints} points (${errorCount} errors)`);
+                    debugLog(
+                        `Successfully read ${successfulPoints}/${totalPoints} points (${errorCount} errors)`
+                    );
 
                     // Update results container
-                    document.getElementById("resultsContainer").innerHTML = tableHTML;
-                    
-                    updateStatus("ready", `Successfully calculated ${successfulPoints} points`);
+                    document.getElementById("resultsContainer").innerHTML =
+                        tableHTML;
+
+                    updateStatus(
+                        "ready",
+                        `Successfully calculated ${successfulPoints} points`
+                    );
 
                     // Step 9: Cleanup memory
                     debugLog("Step 9: Cleaning up allocated memory");
                     Module._free(pointsPtr);
                     Module._free(totalPointsPtr);
-                    
-                    debugLog("=== DDA Calculation Completed Successfully ===");
 
+                    debugLog("=== DDA Calculation Completed Successfully ===");
                 } catch (error) {
-                    debugLog(`Fatal error during calculation: ${error.message}`, 'error');
-                    debugLog(`Stack trace: ${error.stack}`, 'error');
+                    debugLog(
+                        `Fatal error during calculation: ${error.message}`,
+                        "error"
+                    );
+                    debugLog(`Stack trace: ${error.stack}`, "error");
                     updateStatus("error", "Error: " + error.message);
                     document.getElementById("resultsContainer").innerHTML =
                         '<div class="no-results">An error occurred during calculation. Check debug log for details.</div>';
@@ -977,16 +1138,21 @@
                 document.getElementById("resultsContainer").innerHTML =
                     '<div class="no-results">Enter coordinates and click "Calculate DDA Points" to see the line drawing algorithm in action.</div>';
                 document.getElementById("summaryCard").style.display = "none";
-                updateStatus("ready", "Results cleared. Ready for new calculation.");
+                updateStatus(
+                    "ready",
+                    "Results cleared. Ready for new calculation."
+                );
             }
 
             // Enhanced event listeners with debug logging
             document.addEventListener("DOMContentLoaded", function () {
                 debugLog("DOM loaded, setting up event listeners");
-                
-                const inputs = document.querySelectorAll('input[type="number"]');
+
+                const inputs = document.querySelectorAll(
+                    'input[type="number"]'
+                );
                 debugLog(`Found ${inputs.length} number inputs`);
-                
+
                 inputs.forEach((input) => {
                     input.addEventListener("keypress", function (e) {
                         if (e.key === "Enter") {
@@ -1012,12 +1178,15 @@
             });
 
             // Global error handler
-            window.addEventListener('error', function(e) {
-                debugLog(`Global error: ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`, 'error');
+            window.addEventListener("error", function (e) {
+                debugLog(
+                    `Global error: ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`,
+                    "error"
+                );
             });
 
-            window.addEventListener('unhandledrejection', function(e) {
-                debugLog(`Unhandled promise rejection: ${e.reason}`, 'error');
+            window.addEventListener("unhandledrejection", function (e) {
+                debugLog(`Unhandled promise rejection: ${e.reason}`, "error");
             });
         </script>
     </body>
