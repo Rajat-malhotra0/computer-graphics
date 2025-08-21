@@ -475,14 +475,14 @@
                             <label for="x1">Start X</label>
                             <input type="number" id="x1" value="0" />
                             <div class="error-message" id="x1-error">
-                                Value must be between -10000 and 10000
+                                Value must be between -5000 and 5000
                             </div>
                         </div>
                         <div class="input-group">
                             <label for="y1">Start Y</label>
                             <input type="number" id="y1" value="0" />
                             <div class="error-message" id="y1-error">
-                                Value must be between -10000 and 10000
+                                Value must be between -5000 and 5000
                             </div>
                         </div>
                     </div>
@@ -492,14 +492,14 @@
                             <label for="x2">End X</label>
                             <input type="number" id="x2" value="10" />
                             <div class="error-message" id="x2-error">
-                                Value must be between -10000 and 10000
+                                Value must be between -5000 and 5000
                             </div>
                         </div>
                         <div class="input-group">
                             <label for="y2">End Y</label>
                             <input type="number" id="y2" value="5" />
                             <div class="error-message" id="y2-error">
-                                Value must be between -10000 and 10000
+                                Value must be between -5000 and 5000
                             </div>
                         </div>
                     </div>
@@ -599,8 +599,8 @@
                 const errorElement = document.getElementById(
                     inputId + "-error"
                 );
-                const MAX_VALUE = 10000;
-                const MIN_VALUE = -10000;
+                const MAX_VALUE = 5000;
+                const MIN_VALUE = -5000;
 
                 if (value < MIN_VALUE || value > MAX_VALUE || isNaN(value)) {
                     input.classList.add("error");
@@ -629,7 +629,7 @@
                 const dy = Math.abs(y2 - y1);
                 const totalPoints = Math.max(dx, dy) + 1;
 
-                if (totalPoints > 50000) {
+                if (totalPoints > 25000) {
                     // Mark all inputs as invalid if the calculation would be too large
                     ["x1", "y1", "x2", "y2"].forEach((id) => {
                         const input = document.getElementById(id);
@@ -638,7 +638,7 @@
                         );
                         input.classList.add("error");
                         errorElement.textContent =
-                            "Coordinate difference too large (max 50000 points)";
+                            "Coordinate difference too large (max 25000 points)";
                         errorElement.classList.add("show");
                     });
                     return false;
@@ -649,7 +649,7 @@
                             id + "-error"
                         );
                         errorElement.textContent =
-                            "Value must be between -10000 and 10000";
+                            "Value must be between -5000 and 5000";
                     });
                 }
 
@@ -684,6 +684,11 @@
 
                 try {
                     const totalPointsPtr = Module._malloc(4);
+                    if (!totalPointsPtr) {
+                        updateStatus("error", "Failed to allocate memory for calculation");
+                        return;
+                    }
+
                     const pointsPtr = Module._calculate_dda(
                         x1,
                         y1,
@@ -707,7 +712,7 @@
                     }
 
                     // Additional safety check for reasonable values
-                    if (totalPoints > 100000) {
+                    if (totalPoints > 50000) {
                         Module._free(pointsPtr);
                         Module._free(totalPointsPtr);
                         updateStatus(
@@ -783,27 +788,41 @@
                     // Read and display points
                     for (let i = 0; i < totalPoints; i++) {
                         try {
+                            // Check if we're accessing valid memory
+                            const pointAddress = pointsPtr + i * pointSize;
+                            if (pointAddress < 0 || pointAddress > Module.HEAPF32.length * 4) {
+                                console.error(`Invalid memory address for point ${i}: ${pointAddress}`);
+                                throw new Error(`Memory access out of bounds for point ${i}`);
+                            }
+
                             const currentX = Module.getValue(
-                                pointsPtr + i * pointSize,
+                                pointAddress,
                                 "float"
                             );
                             const currentY = Module.getValue(
-                                pointsPtr + i * pointSize + 4,
+                                pointAddress + 4,
                                 "float"
                             );
+
+                            // Validate that the values are reasonable
+                            if (!isFinite(currentX) || !isFinite(currentY)) {
+                                console.error(`Invalid coordinates for point ${i}: (${currentX}, ${currentY})`);
+                                throw new Error(`Invalid coordinates for point ${i}`);
+                            }
 
                             // Get next coordinates (if not last point)
                             let nextX = "—";
                             let nextY = "—";
                             if (i < totalPoints - 1) {
-                                nextX = Module.getValue(
-                                    pointsPtr + (i + 1) * pointSize,
-                                    "float"
-                                ).toFixed(2);
-                                nextY = Module.getValue(
-                                    pointsPtr + (i + 1) * pointSize + 4,
-                                    "float"
-                                ).toFixed(2);
+                                const nextAddress = pointsPtr + (i + 1) * pointSize;
+                                if (nextAddress >= 0 && nextAddress < Module.HEAPF32.length * 4) {
+                                    const nextXVal = Module.getValue(nextAddress, "float");
+                                    const nextYVal = Module.getValue(nextAddress + 4, "float");
+                                    if (isFinite(nextXVal) && isFinite(nextYVal)) {
+                                        nextX = nextXVal.toFixed(2);
+                                        nextY = nextYVal.toFixed(2);
+                                    }
+                                }
                             }
 
                             const roundedCoords = `(${Math.round(
@@ -828,9 +847,11 @@
                             console.error(`Error reading point ${i}:`, error);
                             tableHTML += `
                         <tr>
-                            <td colspan="6">Error reading point ${i}</td>
+                            <td colspan="6">Error reading point ${i}: ${error.message}</td>
                         </tr>
                     `;
+                            // Break the loop to prevent further errors
+                            break;
                         }
                     }
 

@@ -18,15 +18,17 @@ mkdir -p dist
 echo "Compiling main.c to WebAssembly..."
 emcc main.c -o dda.js \
     -s EXPORTED_FUNCTIONS='["_calculate_dda", "_calculate_slope", "_get_point_size", "_malloc", "_free"]' \
-    -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue"]' \
+    -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "HEAP8", "HEAP32", "HEAPF32"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MODULARIZE=0 \
     -s EXPORT_NAME="Module" \
     -s SINGLE_FILE=0 \
-    -O3 \
-    --closure 1 \
-    -s ASSERTIONS=0 \
-    -s SAFE_HEAP=0
+    -s INITIAL_MEMORY=1048576 \
+    -s MAXIMUM_MEMORY=16777216 \
+    -s STACK_SIZE=65536 \
+    -O2 \
+    -s ASSERTIONS=1 \
+    -s SAFE_HEAP=1
 
 # Check if compilation was successful
 if [ $? -eq 0 ]; then
