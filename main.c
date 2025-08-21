@@ -100,6 +100,7 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
 
 #ifdef __EMSCRIPTEN__
     printf("DDA: Calculated iterations=%d, total_points=%d\n", iterations, *total_points);
+    printf("DDA: dx=%.2f, dy=%.2f\n", dx, dy);
 #endif
 
     // Add stricter safety checks
@@ -119,24 +120,38 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
     printf("DDA: Point size: %zu bytes\n", sizeof(point));
 #endif
 
-    // Try a safer allocation approach - allocate and test immediately
+    // Use a more conservative allocation approach
     point *points = NULL;
     
-    // First try standard malloc
-    points = (point *)malloc(memory_needed);
-    
-    if (!points) {
+    // For small arrays, try simple malloc first
+    if (*total_points <= 1000) {
 #ifdef __EMSCRIPTEN__
-        printf("DDA: Standard malloc failed, trying calloc...\n");
+        printf("DDA: Using simple malloc for small array (%d points)\n", *total_points);
 #endif
-        // Try calloc as alternative (initializes to zero)
+        points = (point *)malloc(memory_needed);
+    } else {
+#ifdef __EMSCRIPTEN__
+        printf("DDA: Using calloc for larger array (%d points)\n", *total_points);
+#endif
         points = (point *)calloc(*total_points, sizeof(point));
     }
     
     if (!points) {
 #ifdef __EMSCRIPTEN__
-        printf("DDA: Both malloc and calloc failed for %zu bytes\n", memory_needed);
-        printf("DDA: Trying smaller chunk allocation...\n");
+        printf("DDA: Primary allocation failed, trying alternative approaches\n");
+#endif
+        
+        // Try the opposite allocation method
+        if (*total_points <= 1000) {
+            points = (point *)calloc(*total_points, sizeof(point));
+        } else {
+            points = (point *)malloc(memory_needed);
+        }
+    }
+    
+    if (!points) {
+#ifdef __EMSCRIPTEN__
+        printf("DDA: Both primary allocations failed, trying smaller test allocations\n");
 #endif
         
         // Try allocating in smaller chunks to test memory availability
@@ -148,6 +163,17 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
                 printf("DDA: Successful test allocation of %d points (%zu bytes)\n", test_size, test_bytes);
 #endif
                 free(test_ptr);
+                
+                // If we can allocate half the size, try allocating the full size again
+                if (test_size >= *total_points / 2) {
+                    points = (point *)malloc(memory_needed);
+                    if (points) {
+#ifdef __EMSCRIPTEN__
+                        printf("DDA: Retry allocation successful after test\n");
+#endif
+                        break;
+                    }
+                }
                 break;
             } else {
 #ifdef __EMSCRIPTEN__
@@ -156,27 +182,36 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
             }
         }
         
-        *total_points = 0;
-        return NULL;
+        if (!points) {
+#ifdef __EMSCRIPTEN__
+            printf("DDA: All allocation attempts failed\n");
+#endif
+            *total_points = 0;
+            return NULL;
+        }
     }
 
 #ifdef __EMSCRIPTEN__
     printf("DDA: Successfully allocated memory at %p\n", points);
 #endif
 
-    // Test write access to allocated memory
-    if (points) {
-        // Test writing to first and last elements
+    // Test write access to allocated memory with bounds checking
+    if (points && *total_points > 0) {
+        // Test writing to first element
         points[0].x = 0.0f;
         points[0].y = 0.0f;
-        points[*total_points - 1].x = 0.0f;
-        points[*total_points - 1].y = 0.0f;
+        
+        // Test writing to last element (with bounds check)
+        if (*total_points > 1) {
+            points[*total_points - 1].x = 0.0f;
+            points[*total_points - 1].y = 0.0f;
+        }
         
 #ifdef __EMSCRIPTEN__
         printf("DDA: Memory write test successful\n");
 #endif
         
-        // Initialize all allocated memory to zero
+        // Initialize all allocated memory to zero with bounds checking
         for (int i = 0; i < *total_points; i++)
         {
             points[i].x = 0.0f;
@@ -184,31 +219,52 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
         }
     }
 
-    x_increment = dx / (float)iterations;
-    y_increment = dy / (float)iterations;
+    // Calculate increments with safer division
+    if (iterations > 0) {
+        x_increment = dx / (float)iterations;
+        y_increment = dy / (float)iterations;
+    } else {
+        x_increment = 0.0f;
+        y_increment = 0.0f;
+    }
 
 #ifdef __EMSCRIPTEN__
-    printf("DDA: Increments - x: %f, y: %f\n", x_increment, y_increment);
+    printf("DDA: Increments - x: %f, y: %f (iterations: %d)\n", x_increment, y_increment, iterations);
 #endif
 
     count = 0;
-    points[count].x = xi;
-    points[count].y = yi;
-    count++;
-
-    while (count < *total_points)
-    {
-        xi += x_increment;
-        yi += y_increment;
-
+    
+    // Bounds check before writing
+    if (count < *total_points) {
         points[count].x = xi;
         points[count].y = yi;
         count++;
     }
 
+    while (count < *total_points && iterations > 0)
+    {
+        xi += x_increment;
+        yi += y_increment;
+
+        // Bounds check before writing
+        if (count < *total_points) {
+            points[count].x = xi;
+            points[count].y = yi;
+            count++;
+        } else {
 #ifdef __EMSCRIPTEN__
-    printf("DDA: Successfully calculated %d points\n", count);
+            printf("DDA: WARNING - count exceeded total_points: %d >= %d\n", count, *total_points);
 #endif
+            break;
+        }
+    }
+
+#ifdef __EMSCRIPTEN__
+    printf("DDA: Successfully calculated %d points (expected %d)\n", count, *total_points);
+#endif
+
+    // Update total_points to actual count
+    *total_points = count;
 
     return points;
 }

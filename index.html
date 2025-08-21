@@ -789,6 +789,13 @@
 
                 debugLog("WebAssembly module is ready");
 
+                // Enhanced function availability check
+                debugLog("Checking WebAssembly function availability:");
+                debugLog(`_calculate_dda: ${typeof Module._calculate_dda}`);
+                debugLog(`_test_memory_allocation: ${typeof Module._test_memory_allocation}`);
+                debugLog(`_malloc: ${typeof Module._malloc}`);
+                debugLog(`_free: ${typeof Module._free}`);
+
                 // Validate inputs
                 if (!validateAllInputs()) {
                     debugLog("Input validation failed", "error");
@@ -839,18 +846,24 @@
                     
                     debugLog(`Step 1.5: Testing memory allocation for ${expectedPoints} points`);
                     
-                    if (Module._test_memory_allocation) {
-                        const memoryTestResult = Module._test_memory_allocation(expectedPoints);
-                        debugLog(`Memory allocation test result: ${memoryTestResult ? 'SUCCESS' : 'FAILED'}`);
-                        
-                        if (!memoryTestResult) {
-                            debugLog("Pre-allocation test failed - insufficient memory", "error");
-                            Module._free(totalPointsPtr);
-                            updateStatus("error", "Insufficient memory for calculation");
-                            return;
+                    if (Module._test_memory_allocation && typeof Module._test_memory_allocation === 'function') {
+                        try {
+                            const memoryTestResult = Module._test_memory_allocation(expectedPoints);
+                            debugLog(`Memory allocation test result: ${memoryTestResult ? 'SUCCESS' : 'FAILED'}`);
+                            
+                            if (!memoryTestResult) {
+                                debugLog("Pre-allocation test failed - insufficient memory", "error");
+                                Module._free(totalPointsPtr);
+                                updateStatus("error", "Insufficient memory for calculation");
+                                return;
+                            }
+                        } catch (testError) {
+                            debugLog(`Memory test function error: ${testError.message}`, "warn");
+                            debugLog("Proceeding without memory pre-test", "warn");
                         }
                     } else {
-                        debugLog("Memory test function not available", "warn");
+                        debugLog(`Memory test function not available (type: ${typeof Module._test_memory_allocation})`, "warn");
+                        debugLog("Proceeding without memory pre-test", "warn");
                     }
 
                     // Step 2: Call DDA calculation function
