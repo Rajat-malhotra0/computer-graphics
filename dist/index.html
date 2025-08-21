@@ -94,6 +94,28 @@
                 box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
             }
 
+            .input-group input.error {
+                border-color: #e74c3c;
+                background-color: #fdf2f2;
+                box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+            }
+
+            .input-group input.error:focus {
+                border-color: #e74c3c;
+                box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+            }
+
+            .error-message {
+                color: #e74c3c;
+                font-size: 12px;
+                margin-top: 5px;
+                display: none;
+            }
+
+            .error-message.show {
+                display: block;
+            }
+
             .coordinate-row {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -195,7 +217,7 @@
                 background: #34495e;
                 color: white;
                 padding: 15px;
-                text-align: left;
+                text-align: center;
                 font-weight: 500;
                 font-size: 14px;
                 text-transform: uppercase;
@@ -206,6 +228,7 @@
                 padding: 12px 15px;
                 border-bottom: 1px solid #e9ecef;
                 font-family: "Courier New", monospace;
+                text-align: center;
             }
 
             .results-table tr:nth-child(even) {
@@ -339,7 +362,7 @@
                     border-radius: 8px;
                     background: white;
                     padding: 15px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 }
 
                 .results-table td {
@@ -451,10 +474,16 @@
                         <div class="input-group">
                             <label for="x1">Start X</label>
                             <input type="number" id="x1" value="0" />
+                            <div class="error-message" id="x1-error">
+                                Value must be between -10000 and 10000
+                            </div>
                         </div>
                         <div class="input-group">
                             <label for="y1">Start Y</label>
                             <input type="number" id="y1" value="0" />
+                            <div class="error-message" id="y1-error">
+                                Value must be between -10000 and 10000
+                            </div>
                         </div>
                     </div>
 
@@ -462,10 +491,16 @@
                         <div class="input-group">
                             <label for="x2">End X</label>
                             <input type="number" id="x2" value="10" />
+                            <div class="error-message" id="x2-error">
+                                Value must be between -10000 and 10000
+                            </div>
                         </div>
                         <div class="input-group">
                             <label for="y2">End Y</label>
                             <input type="number" id="y2" value="5" />
+                            <div class="error-message" id="y2-error">
+                                Value must be between -10000 and 10000
+                            </div>
                         </div>
                     </div>
 
@@ -559,11 +594,82 @@
                 spinner.style.display = show ? "block" : "none";
             }
 
+            function validateInput(inputId, value) {
+                const input = document.getElementById(inputId);
+                const errorElement = document.getElementById(
+                    inputId + "-error"
+                );
+                const MAX_VALUE = 10000;
+                const MIN_VALUE = -10000;
+
+                if (value < MIN_VALUE || value > MAX_VALUE || isNaN(value)) {
+                    input.classList.add("error");
+                    errorElement.classList.add("show");
+                    return false;
+                } else {
+                    input.classList.remove("error");
+                    errorElement.classList.remove("show");
+                    return true;
+                }
+            }
+
+            function validateAllInputs() {
+                const x1 = parseInt(document.getElementById("x1").value);
+                const y1 = parseInt(document.getElementById("y1").value);
+                const x2 = parseInt(document.getElementById("x2").value);
+                const y2 = parseInt(document.getElementById("y2").value);
+
+                const isX1Valid = validateInput("x1", x1);
+                const isY1Valid = validateInput("y1", y1);
+                const isX2Valid = validateInput("x2", x2);
+                const isY2Valid = validateInput("y2", y2);
+
+                // Additional check for total points calculation
+                const dx = Math.abs(x2 - x1);
+                const dy = Math.abs(y2 - y1);
+                const totalPoints = Math.max(dx, dy) + 1;
+
+                if (totalPoints > 50000) {
+                    // Mark all inputs as invalid if the calculation would be too large
+                    ["x1", "y1", "x2", "y2"].forEach((id) => {
+                        const input = document.getElementById(id);
+                        const errorElement = document.getElementById(
+                            id + "-error"
+                        );
+                        input.classList.add("error");
+                        errorElement.textContent =
+                            "Coordinate difference too large (max 50000 points)";
+                        errorElement.classList.add("show");
+                    });
+                    return false;
+                } else {
+                    // Reset error messages to default
+                    ["x1", "y1", "x2", "y2"].forEach((id) => {
+                        const errorElement = document.getElementById(
+                            id + "-error"
+                        );
+                        errorElement.textContent =
+                            "Value must be between -10000 and 10000";
+                    });
+                }
+
+                return isX1Valid && isY1Valid && isX2Valid && isY2Valid;
+            }
+
             function calculateDDA() {
                 if (!Module._calculate_dda) {
                     updateStatus(
                         "error",
                         "WebAssembly module not loaded yet. Please wait..."
+                    );
+                    return;
+                }
+
+                // Validate inputs before calculation
+                if (!validateAllInputs()) {
+                    updateStatus(
+                        "error",
+                        "Please fix the input errors before calculating."
                     );
                     return;
                 }
@@ -592,7 +698,15 @@
                     const dx = x2 - x1;
                     const dy = y2 - y1;
                     const length = Math.sqrt(dx * dx + dy * dy).toFixed(2);
-                    const slope = dx !== 0 ? (dy / dx).toFixed(2) : "Undefined";
+
+                    // Use WebAssembly function for accurate slope calculation
+                    const slopeValue = Module._calculate_slope(x1, y1, x2, y2);
+                    let slope;
+                    if (Math.abs(slopeValue) > 999998.0) {
+                        slope = "∞ (Vertical line)";
+                    } else {
+                        slope = slopeValue.toFixed(6);
+                    }
 
                     // Update summary card
                     document.getElementById(
@@ -611,10 +725,11 @@
                         <thead>
                             <tr>
                                 <th>Step</th>
-                                <th>X Coordinate</th>
-                                <th>Y Coordinate</th>
-                                <th>Rounded X</th>
-                                <th>Rounded Y</th>
+                                <th>Current X</th>
+                                <th>Current Y</th>
+                                <th>Next X</th>
+                                <th>Next Y</th>
+                                <th>Rounded Coordinates</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -622,18 +737,45 @@
 
                     // Read and display points
                     for (let i = 0; i < totalPoints; i++) {
-                        const x = Module.getValue(pointsPtr + i * 8, "float");
-                        const y = Module.getValue(
+                        const currentX = Module.getValue(
+                            pointsPtr + i * 8,
+                            "float"
+                        );
+                        const currentY = Module.getValue(
                             pointsPtr + i * 8 + 4,
                             "float"
                         );
+
+                        // Get next coordinates (if not last point)
+                        let nextX = "—";
+                        let nextY = "—";
+                        if (i < totalPoints - 1) {
+                            nextX = Module.getValue(
+                                pointsPtr + (i + 1) * 8,
+                                "float"
+                            ).toFixed(2);
+                            nextY = Module.getValue(
+                                pointsPtr + (i + 1) * 8 + 4,
+                                "float"
+                            ).toFixed(2);
+                        }
+
+                        const roundedCoords = `(${Math.round(
+                            currentX
+                        )}, ${Math.round(currentY)})`;
+
                         tableHTML += `
                         <tr>
                             <td data-label="Step">${i}</td>
-                            <td data-label="X Coordinate">${x.toFixed(2)}</td>
-                            <td data-label="Y Coordinate">${y.toFixed(2)}</td>
-                            <td data-label="Rounded X">${Math.round(x)}</td>
-                            <td data-label="Rounded Y">${Math.round(y)}</td>
+                            <td data-label="Current X">${currentX.toFixed(
+                                2
+                            )}</td>
+                            <td data-label="Current Y">${currentY.toFixed(
+                                2
+                            )}</td>
+                            <td data-label="Next X">${nextX}</td>
+                            <td data-label="Next Y">${nextY}</td>
+                            <td data-label="Rounded Coordinates">${roundedCoords}</td>
                         </tr>
                     `;
                     }
@@ -682,6 +824,17 @@
                         if (e.key === "Enter") {
                             calculateDDA();
                         }
+                    });
+
+                    // Add real-time validation
+                    input.addEventListener("input", function (e) {
+                        const value = parseInt(e.target.value);
+                        validateInput(e.target.id, value);
+                    });
+
+                    input.addEventListener("blur", function (e) {
+                        const value = parseInt(e.target.value);
+                        validateInput(e.target.id, value);
                     });
                 });
             });

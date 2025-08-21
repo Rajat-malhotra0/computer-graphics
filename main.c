@@ -14,13 +14,11 @@ typedef struct
 point *dda(int x1, int y1, int x2, int y2, int *total_points)
 {
     int iterations, count;
-    float slope, dx, dy, inverse;
+    float slope, dx, dy, x_increment, y_increment;
     float xi = x1, yi = y1;
 
     dx = x2 - x1;
     dy = y2 - y1;
-
-    slope = dy / dx;
 
     if (fabsf(dx) > fabsf(dy))
     {
@@ -32,42 +30,45 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
     }
 
     *total_points = iterations + 1;
+
+    x_increment = dx / (float)iterations;
+    y_increment = dy / (float)iterations;
+
     count = 0;
-    inverse = 1 / slope;
     point *points = (point *)malloc(*total_points * sizeof(point));
 
     points[count].x = xi;
     points[count].y = yi;
     count++;
 
-    while (xi < x2 || yi < y2)
+    while (count < *total_points)
     {
-        if (fabsf(slope) >= 1 && slope >= 0)
-        {
-            xi = xi + inverse;
-            yi = yi + 1;
-        }
-        else if (fabsf(slope) >= 1 && slope < 0)
-        {
-            xi = xi + inverse;
-            yi = yi - 1;
-        }
-        else if (fabsf(slope) < 1 && slope >= 0)
-        {
-            xi = xi + 1;
-            yi = yi + slope;
-        }
-        else if (fabsf(slope) < 1 && slope < 0)
-        {
-            xi = xi + 1;
-            yi = yi - fabsf(slope);
-        }
+        xi += x_increment;
+        yi += y_increment;
+
         points[count].x = xi;
         points[count].y = yi;
         count++;
     }
 
     return points;
+}
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+float calculate_slope(int x1, int y1, int x2, int y2)
+{
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+
+    if (dx == 0)
+    {
+        // Vertical line - return a large number to indicate infinite slope
+        return (dy >= 0) ? 999999.0f : -999999.0f;
+    }
+
+    return dy / dx;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -92,6 +93,14 @@ int main()
 
     printf("Enter ending point (x2, y2): ");
     scanf("%d %d", &x2, &y2);
+
+    // Calculate and display slope
+    float slope = calculate_slope(x1, y1, x2, y2);
+    printf("\nSlope: %.6f\n", slope);
+    if (fabsf(slope) > 999998.0f)
+    {
+        printf("(Vertical line - infinite slope)\n");
+    }
 
     point *points = dda(x1, y1, x2, y2, &total_points);
 
