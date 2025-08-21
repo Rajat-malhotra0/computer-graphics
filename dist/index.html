@@ -710,7 +710,10 @@
                     if (totalPoints > 100000) {
                         Module._free(pointsPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus("error", `Too many points: ${totalPoints}. Use smaller coordinates.`);
+                        updateStatus(
+                            "error",
+                            `Too many points: ${totalPoints}. Use smaller coordinates.`
+                        );
                         document.getElementById("resultsContainer").innerHTML =
                             '<div class="no-results">Coordinate difference too large. Please use smaller values.</div>';
                         return;
@@ -737,13 +740,18 @@
                     console.log(
                         `Total points: ${totalPoints}, Points pointer: ${pointsPtr}`
                     );
-                    
+
                     // Get the actual size of a point struct from WebAssembly
                     const pointSize = Module._get_point_size();
                     console.log(`Point struct size: ${pointSize} bytes`);
 
                     // Add visible debug info to the page
-                    updateStatus("loading", `Debug: Points=${totalPoints}, Ptr=${pointSize ? pointsPtr : 'null'}, StructSize=${pointSize}bytes`);
+                    updateStatus(
+                        "loading",
+                        `Debug: Points=${totalPoints}, Ptr=${
+                            pointSize ? pointsPtr : "null"
+                        }, StructSize=${pointSize}bytes`
+                    );
 
                     // Update summary card
                     document.getElementById(

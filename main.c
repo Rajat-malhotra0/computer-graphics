@@ -103,26 +103,27 @@ EMSCRIPTEN_KEEPALIVE
 point *calculate_dda(int x1, int y1, int x2, int y2, int *total_points)
 {
     // Add basic input validation
-    if (abs(x1) > 100000 || abs(y1) > 100000 || 
+    if (abs(x1) > 100000 || abs(y1) > 100000 ||
         abs(x2) > 100000 || abs(y2) > 100000)
     {
         *total_points = 0;
         return NULL;
     }
-    
-    // Debug output for WebAssembly
-    #ifdef __EMSCRIPTEN__
+
+// Debug output for WebAssembly
+#ifdef __EMSCRIPTEN__
     printf("WASM Debug: Calculating DDA from (%d,%d) to (%d,%d)\n", x1, y1, x2, y2);
-    #endif
-    
+#endif
+
     point *result = dda(x1, y1, x2, y2, total_points);
-    
-    #ifdef __EMSCRIPTEN__
+
+#ifdef __EMSCRIPTEN__
     printf("WASM Debug: Result pointer: %p, total_points: %d\n", result, *total_points);
-    #endif
-    
+#endif
+
     return result;
-}int main()
+}
+int main()
 {
     int x1, y1, x2, y2;
     int total_points;
