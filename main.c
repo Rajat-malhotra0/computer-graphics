@@ -19,6 +19,41 @@ int get_point_size()
     return sizeof(point);
 }
 
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+int test_memory_allocation(int num_points)
+{
+    size_t memory_needed = num_points * sizeof(point);
+    
+#ifdef __EMSCRIPTEN__
+    printf("Testing allocation of %d points (%zu bytes)\n", num_points, memory_needed);
+#endif
+    
+    point *test_ptr = (point *)malloc(memory_needed);
+    if (test_ptr) {
+        // Test write access
+        test_ptr[0].x = 1.0f;
+        test_ptr[0].y = 1.0f;
+        if (num_points > 1) {
+            test_ptr[num_points - 1].x = 2.0f;
+            test_ptr[num_points - 1].y = 2.0f;
+        }
+        
+        free(test_ptr);
+        
+#ifdef __EMSCRIPTEN__
+        printf("Memory allocation test successful for %d points\n", num_points);
+#endif
+        return 1; // Success
+    } else {
+#ifdef __EMSCRIPTEN__
+        printf("Memory allocation test failed for %d points\n", num_points);
+#endif
+        return 0; // Failure
+    }
+}
+
 point *dda(int x1, int y1, int x2, int y2, int *total_points)
 {
     int iterations, count;
@@ -81,15 +116,46 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
     size_t memory_needed = *total_points * sizeof(point);
 #ifdef __EMSCRIPTEN__
     printf("DDA: Attempting to allocate %zu bytes for %d points\n", memory_needed, *total_points);
+    printf("DDA: Point size: %zu bytes\n", sizeof(point));
 #endif
 
-    // Allocate memory with error checking
-    point *points = (point *)malloc(memory_needed);
-    if (!points)
-    {
+    // Try a safer allocation approach - allocate and test immediately
+    point *points = NULL;
+    
+    // First try standard malloc
+    points = (point *)malloc(memory_needed);
+    
+    if (!points) {
 #ifdef __EMSCRIPTEN__
-        printf("DDA: Failed to allocate %zu bytes for points array\n", memory_needed);
+        printf("DDA: Standard malloc failed, trying calloc...\n");
 #endif
+        // Try calloc as alternative (initializes to zero)
+        points = (point *)calloc(*total_points, sizeof(point));
+    }
+    
+    if (!points) {
+#ifdef __EMSCRIPTEN__
+        printf("DDA: Both malloc and calloc failed for %zu bytes\n", memory_needed);
+        printf("DDA: Trying smaller chunk allocation...\n");
+#endif
+        
+        // Try allocating in smaller chunks to test memory availability
+        for (int test_size = *total_points; test_size > 0; test_size /= 2) {
+            size_t test_bytes = test_size * sizeof(point);
+            point *test_ptr = (point *)malloc(test_bytes);
+            if (test_ptr) {
+#ifdef __EMSCRIPTEN__
+                printf("DDA: Successful test allocation of %d points (%zu bytes)\n", test_size, test_bytes);
+#endif
+                free(test_ptr);
+                break;
+            } else {
+#ifdef __EMSCRIPTEN__
+                printf("DDA: Failed test allocation of %d points (%zu bytes)\n", test_size, test_bytes);
+#endif
+            }
+        }
+        
         *total_points = 0;
         return NULL;
     }
@@ -98,11 +164,24 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
     printf("DDA: Successfully allocated memory at %p\n", points);
 #endif
 
-    // Initialize allocated memory to zero
-    for (int i = 0; i < *total_points; i++)
-    {
-        points[i].x = 0.0f;
-        points[i].y = 0.0f;
+    // Test write access to allocated memory
+    if (points) {
+        // Test writing to first and last elements
+        points[0].x = 0.0f;
+        points[0].y = 0.0f;
+        points[*total_points - 1].x = 0.0f;
+        points[*total_points - 1].y = 0.0f;
+        
+#ifdef __EMSCRIPTEN__
+        printf("DDA: Memory write test successful\n");
+#endif
+        
+        // Initialize all allocated memory to zero
+        for (int i = 0; i < *total_points; i++)
+        {
+            points[i].x = 0.0f;
+            points[i].y = 0.0f;
+        }
     }
 
     x_increment = dx / (float)iterations;

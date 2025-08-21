@@ -636,15 +636,21 @@
                             .filter((key) => key.startsWith("_"))
                             .join(", ")}`
                     );
-                    
+
                     // Log memory information
                     if (Module.HEAPF32) {
-                        debugLog(`Initial heap size: HEAPF32.length=${Module.HEAPF32.length} (${Module.HEAPF32.length * 4} bytes)`);
+                        debugLog(
+                            `Initial heap size: HEAPF32.length=${
+                                Module.HEAPF32.length
+                            } (${Module.HEAPF32.length * 4} bytes)`
+                        );
                     }
                     if (Module.HEAP8) {
-                        debugLog(`Initial heap size: HEAP8.length=${Module.HEAP8.length} bytes`);
+                        debugLog(
+                            `Initial heap size: HEAP8.length=${Module.HEAP8.length} bytes`
+                        );
                     }
-                    
+
                     updateStatus(
                         "ready",
                         "WebAssembly module loaded successfully!"
@@ -660,10 +666,10 @@
                 printErr: function (text) {
                     debugLog(`WASM Error: ${text}`, "error");
                 },
-                onOutOfMemory: function() {
+                onOutOfMemory: function () {
                     debugLog("WebAssembly out of memory!", "error");
                     updateStatus("error", "WebAssembly ran out of memory");
-                }
+                },
             };
 
             // Initialize debug logging
@@ -826,14 +832,39 @@
                         `Memory allocated successfully at: ${totalPointsPtr}`
                     );
 
+                    // Step 1.5: Test memory allocation for expected points
+                    const deltaX = Math.abs(x2 - x1);
+                    const deltaY = Math.abs(y2 - y1);
+                    const expectedPoints = Math.max(deltaX, deltaY) + 1;
+                    
+                    debugLog(`Step 1.5: Testing memory allocation for ${expectedPoints} points`);
+                    
+                    if (Module._test_memory_allocation) {
+                        const memoryTestResult = Module._test_memory_allocation(expectedPoints);
+                        debugLog(`Memory allocation test result: ${memoryTestResult ? 'SUCCESS' : 'FAILED'}`);
+                        
+                        if (!memoryTestResult) {
+                            debugLog("Pre-allocation test failed - insufficient memory", "error");
+                            Module._free(totalPointsPtr);
+                            updateStatus("error", "Insufficient memory for calculation");
+                            return;
+                        }
+                    } else {
+                        debugLog("Memory test function not available", "warn");
+                    }
+
                     // Step 2: Call DDA calculation function
                     debugLog("Step 2: Calling WebAssembly DDA function");
-                    
+
                     // Pre-check memory state
                     if (Module.HEAPF32) {
-                        debugLog(`Pre-call heap state: HEAPF32.length=${Module.HEAPF32.length}, bytes=${Module.HEAPF32.length * 4}`);
+                        debugLog(
+                            `Pre-call heap state: HEAPF32.length=${
+                                Module.HEAPF32.length
+                            }, bytes=${Module.HEAPF32.length * 4}`
+                        );
                     }
-                    
+
                     // Try a small test allocation first
                     debugLog("Step 2a: Testing small memory allocation");
                     const testPtr = Module._malloc(64); // Allocate 64 bytes for test
@@ -842,12 +873,18 @@
                         Module._free(testPtr);
                         debugLog("Test allocation freed successfully");
                     } else {
-                        debugLog("Test allocation failed - memory may be exhausted", 'error');
+                        debugLog(
+                            "Test allocation failed - memory may be exhausted",
+                            "error"
+                        );
                         Module._free(totalPointsPtr);
-                        updateStatus("error", "Memory exhausted - cannot allocate space for calculation");
+                        updateStatus(
+                            "error",
+                            "Memory exhausted - cannot allocate space for calculation"
+                        );
                         return;
                     }
-                    
+
                     debugLog("Step 2b: Calling actual DDA function");
                     let pointsPtr;
                     try {
@@ -858,12 +895,20 @@
                             y2,
                             totalPointsPtr
                         );
-                        debugLog(`DDA function call completed, pointer: ${pointsPtr}`);
+                        debugLog(
+                            `DDA function call completed, pointer: ${pointsPtr}`
+                        );
                     } catch (wasmError) {
-                        debugLog(`WebAssembly function call failed: ${wasmError.message}`, 'error');
-                        debugLog(`Error type: ${wasmError.name}`, 'error');
+                        debugLog(
+                            `WebAssembly function call failed: ${wasmError.message}`,
+                            "error"
+                        );
+                        debugLog(`Error type: ${wasmError.name}`, "error");
                         Module._free(totalPointsPtr);
-                        updateStatus("error", `WebAssembly call failed: ${wasmError.message}`);
+                        updateStatus(
+                            "error",
+                            `WebAssembly call failed: ${wasmError.message}`
+                        );
                         return;
                     }
 
