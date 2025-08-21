@@ -11,6 +11,14 @@ typedef struct
     float y;
 } point;
 
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+int get_point_size()
+{
+    return sizeof(point);
+}
+
 point *dda(int x1, int y1, int x2, int y2, int *total_points)
 {
     int iterations, count;
@@ -25,7 +33,8 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
     {
         *total_points = 1;
         point *points = (point *)malloc(sizeof(point));
-        if (!points) return NULL;
+        if (!points)
+            return NULL;
         points[0].x = x1;
         points[0].y = y1;
         return points;
@@ -44,7 +53,7 @@ point *dda(int x1, int y1, int x2, int y2, int *total_points)
 
     // Allocate memory with error checking
     point *points = (point *)malloc(*total_points * sizeof(point));
-    if (!points) 
+    if (!points)
     {
         *total_points = 0;
         return NULL;
@@ -101,10 +110,19 @@ point *calculate_dda(int x1, int y1, int x2, int y2, int *total_points)
         return NULL;
     }
     
-    return dda(x1, y1, x2, y2, total_points);
-}
-
-int main()
+    // Debug output for WebAssembly
+    #ifdef __EMSCRIPTEN__
+    printf("WASM Debug: Calculating DDA from (%d,%d) to (%d,%d)\n", x1, y1, x2, y2);
+    #endif
+    
+    point *result = dda(x1, y1, x2, y2, total_points);
+    
+    #ifdef __EMSCRIPTEN__
+    printf("WASM Debug: Result pointer: %p, total_points: %d\n", result, *total_points);
+    #endif
+    
+    return result;
+}int main()
 {
     int x1, y1, x2, y2;
     int total_points;

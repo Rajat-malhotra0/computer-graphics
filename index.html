@@ -697,7 +697,10 @@
                     // Check if calculation failed
                     if (pointsPtr === 0 || totalPoints === 0) {
                         Module._free(totalPointsPtr);
-                        updateStatus("error", "Calculation failed - coordinates may be too large or invalid");
+                        updateStatus(
+                            "error",
+                            "Calculation failed - coordinates may be too large or invalid"
+                        );
                         document.getElementById("resultsContainer").innerHTML =
                             '<div class="no-results">Calculation failed. Please check your input values.</div>';
                         return;
@@ -718,8 +721,16 @@
                     }
 
                     // Debug: Log calculation details
-                    console.log(`Calculating DDA for (${x1},${y1}) to (${x2},${y2})`);
-                    console.log(`Total points: ${totalPoints}, Points pointer: ${pointsPtr}`);
+                    console.log(
+                        `Calculating DDA for (${x1},${y1}) to (${x2},${y2})`
+                    );
+                    console.log(
+                        `Total points: ${totalPoints}, Points pointer: ${pointsPtr}`
+                    );
+                    
+                    // Get the actual size of a point struct from WebAssembly
+                    const pointSize = Module._get_point_size();
+                    console.log(`Point struct size: ${pointSize} bytes`);
 
                     // Update summary card
                     document.getElementById(
@@ -752,11 +763,11 @@
                     for (let i = 0; i < totalPoints; i++) {
                         try {
                             const currentX = Module.getValue(
-                                pointsPtr + i * 8,
+                                pointsPtr + i * pointSize,
                                 "float"
                             );
                             const currentY = Module.getValue(
-                                pointsPtr + i * 8 + 4,
+                                pointsPtr + i * pointSize + 4,
                                 "float"
                             );
 
@@ -765,11 +776,11 @@
                             let nextY = "—";
                             if (i < totalPoints - 1) {
                                 nextX = Module.getValue(
-                                    pointsPtr + (i + 1) * 8,
+                                    pointsPtr + (i + 1) * pointSize,
                                     "float"
                                 ).toFixed(2);
                                 nextY = Module.getValue(
-                                    pointsPtr + (i + 1) * 8 + 4,
+                                    pointsPtr + (i + 1) * pointSize + 4,
                                     "float"
                                 ).toFixed(2);
                             }
