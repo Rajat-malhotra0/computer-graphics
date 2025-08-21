@@ -14,29 +14,46 @@ typedef struct
 point *dda(int x1, int y1, int x2, int y2, int *total_points)
 {
     int iterations, count;
-    float slope, dx, dy, x_increment, y_increment;
+    float dx, dy, x_increment, y_increment;
     float xi = x1, yi = y1;
 
     dx = x2 - x1;
     dy = y2 - y1;
 
+    // Handle the case where start and end points are the same
+    if (dx == 0 && dy == 0)
+    {
+        *total_points = 1;
+        point *points = (point *)malloc(sizeof(point));
+        if (!points) return NULL;
+        points[0].x = x1;
+        points[0].y = y1;
+        return points;
+    }
+
     if (fabsf(dx) > fabsf(dy))
     {
-        iterations = fabsf(dx);
+        iterations = (int)fabsf(dx);
     }
     else
     {
-        iterations = fabsf(dy);
+        iterations = (int)fabsf(dy);
     }
 
     *total_points = iterations + 1;
+
+    // Allocate memory with error checking
+    point *points = (point *)malloc(*total_points * sizeof(point));
+    if (!points) 
+    {
+        *total_points = 0;
+        return NULL;
+    }
 
     x_increment = dx / (float)iterations;
     y_increment = dy / (float)iterations;
 
     count = 0;
-    point *points = (point *)malloc(*total_points * sizeof(point));
-
     points[count].x = xi;
     points[count].y = yi;
     count++;
@@ -76,6 +93,14 @@ EMSCRIPTEN_KEEPALIVE
 #endif
 point *calculate_dda(int x1, int y1, int x2, int y2, int *total_points)
 {
+    // Add basic input validation
+    if (abs(x1) > 100000 || abs(y1) > 100000 || 
+        abs(x2) > 100000 || abs(y2) > 100000)
+    {
+        *total_points = 0;
+        return NULL;
+    }
+    
     return dda(x1, y1, x2, y2, total_points);
 }
 

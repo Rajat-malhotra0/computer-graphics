@@ -694,6 +694,15 @@
 
                     const totalPoints = Module.getValue(totalPointsPtr, "i32");
 
+                    // Check if calculation failed
+                    if (pointsPtr === 0 || totalPoints === 0) {
+                        Module._free(totalPointsPtr);
+                        updateStatus("error", "Calculation failed - coordinates may be too large or invalid");
+                        document.getElementById("resultsContainer").innerHTML =
+                            '<div class="no-results">Calculation failed. Please check your input values.</div>';
+                        return;
+                    }
+
                     // Calculate line properties
                     const dx = x2 - x1;
                     const dy = y2 - y1;
@@ -707,6 +716,10 @@
                     } else {
                         slope = slopeValue.toFixed(6);
                     }
+
+                    // Debug: Log calculation details
+                    console.log(`Calculating DDA for (${x1},${y1}) to (${x2},${y2})`);
+                    console.log(`Total points: ${totalPoints}, Points pointer: ${pointsPtr}`);
 
                     // Update summary card
                     document.getElementById(
@@ -737,34 +750,35 @@
 
                     // Read and display points
                     for (let i = 0; i < totalPoints; i++) {
-                        const currentX = Module.getValue(
-                            pointsPtr + i * 8,
-                            "float"
-                        );
-                        const currentY = Module.getValue(
-                            pointsPtr + i * 8 + 4,
-                            "float"
-                        );
-
-                        // Get next coordinates (if not last point)
-                        let nextX = "—";
-                        let nextY = "—";
-                        if (i < totalPoints - 1) {
-                            nextX = Module.getValue(
-                                pointsPtr + (i + 1) * 8,
+                        try {
+                            const currentX = Module.getValue(
+                                pointsPtr + i * 8,
                                 "float"
-                            ).toFixed(2);
-                            nextY = Module.getValue(
-                                pointsPtr + (i + 1) * 8 + 4,
+                            );
+                            const currentY = Module.getValue(
+                                pointsPtr + i * 8 + 4,
                                 "float"
-                            ).toFixed(2);
-                        }
+                            );
 
-                        const roundedCoords = `(${Math.round(
-                            currentX
-                        )}, ${Math.round(currentY)})`;
+                            // Get next coordinates (if not last point)
+                            let nextX = "—";
+                            let nextY = "—";
+                            if (i < totalPoints - 1) {
+                                nextX = Module.getValue(
+                                    pointsPtr + (i + 1) * 8,
+                                    "float"
+                                ).toFixed(2);
+                                nextY = Module.getValue(
+                                    pointsPtr + (i + 1) * 8 + 4,
+                                    "float"
+                                ).toFixed(2);
+                            }
 
-                        tableHTML += `
+                            const roundedCoords = `(${Math.round(
+                                currentX
+                            )}, ${Math.round(currentY)})`;
+
+                            tableHTML += `
                         <tr>
                             <td data-label="Step">${i}</td>
                             <td data-label="Current X">${currentX.toFixed(
@@ -778,6 +792,14 @@
                             <td data-label="Rounded Coordinates">${roundedCoords}</td>
                         </tr>
                     `;
+                        } catch (error) {
+                            console.error(`Error reading point ${i}:`, error);
+                            tableHTML += `
+                        <tr>
+                            <td colspan="6">Error reading point ${i}</td>
+                        </tr>
+                    `;
+                        }
                     }
 
                     tableHTML += `
