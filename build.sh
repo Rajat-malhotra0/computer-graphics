@@ -1,31 +1,32 @@
 #!/bin/bash
+set -e
 
-# DDA Algorithm WebAssembly Build Script
-# This script compiles the C code to WebAssembly using Emscripten
+# Simplified build & deploy script
+# 1. Builds WebAssembly artifacts into dist/
+# 2. Copies index.html
+# 3. Commits & pushes dist/ (triggers Netlify deploy)
 
-echo "🚀 Building DDA Algorithm for WebAssembly..."
+echo "🚀 Build & Deploy: DDA WebAssembly"
 
-# Check if emcc is available
-if ! command -v emcc &> /dev/null; then
-    echo "Error: Emscripten (emcc) not found. Please install Emscripten first."
+if ! command -v emcc >/dev/null 2>&1; then
+    echo "❌ emcc not found. Load emsdk environment first." >&2
     exit 1
 fi
 
-# Create dist directory for production build
-# Ensure fresh dist directory
-mkdir -p dist
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)
+COMMIT_MSG=${COMMIT_MSG:-"build: update dist (auto)"}
 
-# Optional: clean old build artifacts in dist (retain index.html until copied)
+echo "🔧 Preparing dist/"
+mkdir -p dist
 rm -f dist/dda.js dist/dda.wasm
 
-# Compile C code to WebAssembly with production optimizations
-echo "Compiling main.c to WebAssembly (output -> dist/)..."
+echo "🧪 Compiling (emcc -> dist/dda.js, dist/dda.wasm)"
 emcc main.c -o dist/dda.js \
     -s EXPORTED_FUNCTIONS='["_get_dda_points_array","_calculate_slope","_get_point_size","_test_memory_allocation","_malloc","_free"]' \
     -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","getValue","setValue","HEAP8","HEAP32","HEAPF32"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MODULARIZE=0 \
-    -s EXPORT_NAME="Module" \
+    -s EXPORT_NAME=Module \
     -s SINGLE_FILE=0 \
     -s INITIAL_MEMORY=2097152 \
     -s MAXIMUM_MEMORY=33554432 \
@@ -36,37 +37,32 @@ emcc main.c -o dist/dda.js \
     -s ASSERTIONS=1 \
     -s SAFE_HEAP=0
 
-# Check if compilation was successful
-if [ $? -eq 0 ]; then
-    echo "✅ WebAssembly compilation successful!"
-    
-    # Copy HTML entrypoint to dist
-    cp index.html dist/
-    
-    echo "✅ Files copied to dist/ directory"
-    echo "📦 Production build ready for deployment!"
-    echo ""
-    echo "Generated files:"
-    echo "  - dist/dda.js (JavaScript glue + WASM loader)"
-    echo "  - dist/dda.wasm (WebAssembly binary)"
-    echo "  - dist/index.html (Web interface)"
-    echo ""
-    
-    # Show file sizes
-    echo "📊 Build Output:"
-    ls -lh dist/
-    
-    # Check if we're in a CI environment
-    if [ -z "$CI" ]; then
-        read -p "🌐 Start local preview server? (y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            echo "🌍 Starting server at http://localhost:8080"
-            echo "Press Ctrl+C to stop the server"
-            cd dist && python3 -m http.server 8080
-        fi
-    fi
-else
-    echo "❌ Compilation failed!"
-    exit 1
+echo "📄 Copying index.html"
+cp index.html dist/
+
+echo "📦 Build artifacts:"
+ls -lh dist/
+
+# Auto add a .nojekyll (optional) to avoid GitHub Pages processing if reused
+printf "# Prevent GitHub Pages Jekyll processing (harmless for Netlify)\n" > dist/.nojekyll 2>/dev/null || true
+
+echo "📝 Staging dist/ for commit"
+git add dist/
+
+if git diff --cached --quiet; then
+    echo "ℹ️  No changes in dist/ to commit. Skipping push."
+    exit 0
 fi
+
+echo "🧷 Committing: $COMMIT_MSG"
+git commit -m "$COMMIT_MSG" --no-verify || true
+
+if git config remote.origin.url >/dev/null 2>&1; then
+    echo "🚀 Pushing to origin/$BRANCH"
+    git push origin "$BRANCH"
+    echo "✅ Push complete. Netlify will deploy if configured."
+else
+    echo "⚠️  No git remote 'origin' found. Skipping push."
+fi
+
+echo "🎉 Done."
