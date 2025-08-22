@@ -83,23 +83,22 @@
             .input-section {
                 display: flex;
                 flex-direction: column;
+                gap: 2rem; /* Sets the large space between sections */
                 border-right: 1px solid var(--border-color);
                 padding-right: 3rem;
-                min-width: 0; /* Prevents this column from overflowing */
+                min-width: 0;
             }
 
-            .input-section > * + * {
-                margin-top: 2rem;
-            }
-
-            .input-group + .input-group {
-                margin-top: 0.1rem;
+            .input-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem; /* This sets the smaller gap between input rows */
             }
 
             .input-section h2 {
                 font-family: var(--header-font);
                 color: var(--primary-color);
-                margin-bottom: 0.5rem;
+                margin-bottom: 0;
                 font-size: 1.5rem;
                 font-weight: 600;
                 border-bottom: 1px solid var(--border-color);
@@ -110,7 +109,6 @@
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 1rem;
-                margin-bottom: 0.3rem;
             }
 
             .input-field {
@@ -165,7 +163,6 @@
                 display: flex;
                 flex-direction: column;
                 gap: 1rem;
-                margin-top: 1.5rem;
             }
 
             .btn {
@@ -213,7 +210,7 @@
                 border-top: 3px solid var(--primary-color);
                 border-radius: 50%;
                 animation: spin 1s linear infinite;
-                margin: 1.5rem auto 0;
+                margin: 0 auto;
             }
 
             @keyframes spin {
@@ -229,7 +226,7 @@
                 display: flex;
                 flex-direction: column;
                 gap: 2rem;
-                min-width: 0; /* Prevents this column from overflowing */
+                min-width: 0;
             }
 
             .results-section > * {
@@ -315,7 +312,7 @@
             .results-table th,
             .results-table td {
                 padding: 14px 18px;
-                text-align: center;
+                text-align: left;
                 border-bottom: 1px solid var(--border-color);
                 white-space: nowrap;
             }
@@ -423,36 +420,38 @@
                 <aside class="input-section">
                     <h2>Parameters</h2>
 
-                    <div class="input-group">
-                        <div class="input-field">
-                            <label for="x1">Start X (x₁)</label>
-                            <input type="number" id="x1" value="0" />
-                            <div class="error-message" id="x1-error">
-                                Value must be between -5000 and 5000
+                    <div class="input-wrapper">
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label for="x1">Start X (x₁)</label>
+                                <input type="number" id="x1" value="0" />
+                                <div class="error-message" id="x1-error">
+                                    Value must be between -5000 and 5000
+                                </div>
+                            </div>
+                            <div class="input-field">
+                                <label for="y1">Start Y (y₁)</label>
+                                <input type="number" id="y1" value="0" />
+                                <div class="error-message" id="y1-error">
+                                    Value must be between -5000 and 5000
+                                </div>
                             </div>
                         </div>
-                        <div class="input-field">
-                            <label for="y1">Start Y (y₁)</label>
-                            <input type="number" id="y1" value="0" />
-                            <div class="error-message" id="y1-error">
-                                Value must be between -5000 and 5000
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="input-group">
-                        <div class="input-field">
-                            <label for="x2">End X (x₂)</label>
-                            <input type="number" id="x2" value="10" />
-                            <div class="error-message" id="x2-error">
-                                Value must be between -5000 and 5000
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label for="x2">End X (x₂)</label>
+                                <input type="number" id="x2" value="10" />
+                                <div class="error-message" id="x2-error">
+                                    Value must be between -5000 and 5000
+                                </div>
                             </div>
-                        </div>
-                        <div class="input-field">
-                            <label for="y2">End Y (y₂)</label>
-                            <input type="number" id="y2" value="5" />
-                            <div class="error-message" id="y2-error">
-                                Value must be between -5000 and 5000
+                            <div class="input-field">
+                                <label for="y2">End Y (y₂)</label>
+                                <input type="number" id="y2" value="5" />
+                                <div class="error-message" id="y2-error">
+                                    Value must be between -5000 and 5000
+                                </div>
                             </div>
                         </div>
                     </div>
