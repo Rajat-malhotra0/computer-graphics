@@ -3,8 +3,29 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>DDA Line Drawing Algorithm - WebAssembly</title>
+        <title>DDA Algorithm Analysis Tool</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..24,400;8..24,600;8..24,700&family=Inter:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
         <style>
+            :root {
+                --primary-color: #000000;
+                --secondary-color: #555555;
+                --background-color: #ffffff;
+                --container-bg: #ffffff;
+                --text-color: #222222;
+                --light-text: #666666;
+                --border-color: #dddddd;
+                --error-color: #d32f2f;
+                --success-color: #2e7d32;
+                --processing-color: #0288d1;
+                --header-font: "Source Serif 4", serif;
+                --body-font: "Inter", sans-serif;
+            }
+
             * {
                 box-sizing: border-box;
                 margin: 0;
@@ -12,118 +33,119 @@
             }
 
             body {
-                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                font-family: var(--body-font);
                 line-height: 1.6;
-                color: #333;
-                background: #f5f5f5;
+                color: var(--text-color);
+                background: var(--background-color);
                 min-height: 100vh;
-                padding: 20px;
+                padding: 2.5rem;
             }
 
             .container {
-                max-width: 1200px;
+                max-width: 1600px;
                 margin: 0 auto;
-                background: white;
-                border-radius: 15px;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+                background: var(--container-bg);
+                border-radius: 0;
+                box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.1);
                 overflow: hidden;
+                border: 1px solid var(--border-color);
             }
 
             .header {
-                background: #2c3e50;
+                background: var(--primary-color);
                 color: white;
-                padding: 30px;
-                text-align: center;
+                padding: 2.5rem 3rem;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
             }
 
             .header h1 {
+                font-family: var(--header-font);
                 font-size: 2.5rem;
-                margin-bottom: 10px;
-                font-weight: 300;
+                margin-bottom: 0.5rem;
+                font-weight: 700;
             }
 
             .header p {
                 font-size: 1.1rem;
-                opacity: 0.9;
+                opacity: 0.8;
+                font-weight: 400;
+                max-width: 800px;
             }
 
             .main-content {
                 display: grid;
-                grid-template-columns: 1fr 3fr;
-                gap: 30px;
-                padding: 30px;
+                grid-template-columns: 25% 1fr;
+                gap: 3rem;
+                padding: 3rem;
             }
 
             .input-section {
                 display: flex;
                 flex-direction: column;
-                gap: 20px;
+                gap: 2rem;
+                border-right: 1px solid var(--border-color);
+                padding-right: 3rem;
             }
 
-            .results-section {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .card {
-                background: #f8f9fa;
-                border-radius: 10px;
-                padding: 25px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            }
-
-            .card h2 {
-                color: #2c3e50;
-                margin-bottom: 20px;
+            .input-section h2 {
+                font-family: var(--header-font);
+                color: var(--primary-color);
+                margin-bottom: 0.5rem;
                 font-size: 1.5rem;
-                font-weight: 400;
+                font-weight: 600;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 1rem;
             }
 
             .input-group {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 15px;
-                margin-bottom: 20px;
+                gap: 1rem;
+                margin-bottom: 1rem;
             }
 
             .input-field {
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
+                gap: 0.5rem;
             }
 
             .input-field label {
                 font-weight: 500;
-                color: #555;
+                color: var(--secondary-color);
                 font-size: 0.9rem;
             }
 
             .input-field input {
-                padding: 12px;
-                border: 2px solid #e9ecef;
-                border-radius: 8px;
+                padding: 10px 12px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
                 font-size: 1rem;
-                transition: border-color 0.3s ease;
+                font-family: var(--body-font);
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+                background: #f9f9f9;
             }
 
             .input-field input:focus {
                 outline: none;
-                border-color: #007bff;
-                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+                background: var(--background-color);
             }
 
             .input-field input.error {
-                border-color: #dc3545;
-                background-color: #fdf2f2;
+                border-color: var(--error-color);
+                background-color: #fff8f8;
             }
 
             .error-message {
-                color: #dc3545;
+                color: var(--error-color);
                 font-size: 0.8rem;
                 opacity: 0;
                 transition: opacity 0.3s ease;
                 min-height: 1rem;
+                font-weight: 500;
             }
 
             .error-message.show {
@@ -132,55 +154,57 @@
 
             .button-group {
                 display: flex;
-                gap: 15px;
-                margin-top: 20px;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1.5rem;
             }
 
             .btn {
-                padding: 12px 24px;
-                border: none;
-                border-radius: 8px;
+                padding: 12px 20px;
+                border: 1px solid transparent;
+                border-radius: 4px;
                 font-size: 1rem;
-                font-weight: 500;
+                font-weight: 600;
                 cursor: pointer;
-                transition: all 0.3s ease;
+                transition: all 0.2s ease;
                 text-decoration: none;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
+                font-family: var(--body-font);
             }
 
             .btn-primary {
-                background: #007bff;
+                background: var(--primary-color);
                 color: white;
+                border-color: var(--primary-color);
             }
 
             .btn-primary:hover {
-                background: #0056b3;
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+                background: #333;
             }
 
             .btn-outline {
                 background: transparent;
-                color: #6c757d;
-                border: 2px solid #6c757d;
+                color: var(--secondary-color);
+                border: 1px solid var(--border-color);
             }
 
             .btn-outline:hover {
-                background: #6c757d;
-                color: white;
+                background: #f9f9f9;
+                color: var(--primary-color);
+                border-color: #bbb;
             }
 
             .loading-spinner {
                 display: none;
-                width: 40px;
-                height: 40px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #007bff;
+                width: 28px;
+                height: 28px;
+                border: 3px solid #eee;
+                border-top: 3px solid var(--primary-color);
                 border-radius: 50%;
                 animation: spin 1s linear infinite;
-                margin: 20px auto;
+                margin: 1.5rem auto 0;
             }
 
             @keyframes spin {
@@ -193,217 +217,253 @@
             }
 
             .status-indicator {
-                padding: 12px 20px;
-                border-radius: 8px;
+                padding: 1rem 1.5rem;
+                border-radius: 4px;
                 font-weight: 500;
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 2rem;
                 transition: all 0.3s ease;
+                border: 1px solid var(--border-color);
+                background: #f9f9f9;
             }
-
             .status-ready {
-                background: #d4edda;
-                color: #155724;
-                border: 1px solid #c3e6cb;
+                color: #333;
             }
-
             .status-processing {
-                background: #fff3cd;
-                color: #856404;
-                border: 1px solid #ffeaa7;
+                color: var(--processing-color);
             }
-
             .status-success {
-                background: #d1ecf1;
-                color: #0c5460;
-                border: 1px solid #bee5eb;
+                color: var(--success-color);
             }
-
             .status-error {
-                background: #f8d7da;
-                color: #721c24;
-                border: 1px solid #f5c6cb;
-            }
-
-            .status-info {
-                background: #d1ecf1;
-                color: #0c5460;
-                border: 1px solid #bee5eb;
+                color: var(--error-color);
             }
 
             .summary-card {
-                background: #e8f4fd;
-                border: 1px solid #bee5eb;
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 20px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .summary-card h3 {
+                font-family: var(--header-font);
+                font-size: 1.3rem;
+                margin-bottom: 1.5rem;
+                font-weight: 600;
             }
 
             .summary-stats {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 15px;
-                text-align: center;
+                gap: 1.5rem;
+                text-align: left;
             }
 
             .stat-item {
                 display: flex;
                 flex-direction: column;
-                gap: 5px;
+                gap: 0.25rem;
             }
 
             .stat-value {
-                font-size: 1.5rem;
-                font-weight: bold;
-                color: #2c3e50;
+                font-size: 2rem;
+                font-weight: 600;
+                color: var(--primary-color);
+                line-height: 1.1;
             }
 
             .stat-label {
                 font-size: 0.9rem;
-                color: #6c757d;
-                font-style: italic;
+                color: var(--light-text);
+                font-style: normal;
             }
 
-            @media (max-width: 768px) {
+            @media (max-width: 1200px) {
+                .main-content {
+                    grid-template-columns: 30% 1fr;
+                    gap: 2rem;
+                    padding: 2rem;
+                }
+                .input-section {
+                    padding-right: 2rem;
+                }
+            }
+
+            @media (max-width: 992px) {
                 body {
-                    padding: 10px;
+                    padding: 1rem;
                 }
-
-                .container {
-                    border-radius: 10px;
-                }
-
                 .main-content {
                     grid-template-columns: 1fr;
-                    gap: 20px;
-                    padding: 20px;
+                    gap: 2.5rem;
+                    padding: 2rem;
                 }
-
+                .input-section {
+                    border-right: none;
+                    padding-right: 0;
+                    border-bottom: 1px solid var(--border-color);
+                    padding-bottom: 2.5rem;
+                }
+                .header {
+                    padding: 2rem;
+                }
                 .header h1 {
                     font-size: 2rem;
                 }
-
+            }
+            @media (max-width: 576px) {
+                body {
+                    padding: 0;
+                }
+                .container {
+                    border: none;
+                    box-shadow: none;
+                }
+                .header {
+                    padding: 1.5rem;
+                }
+                .main-content {
+                    padding: 1.5rem;
+                }
                 .input-group {
                     grid-template-columns: 1fr;
                 }
+            }
 
-                .button-group {
-                    flex-direction: column;
-                }
+            .results-section h3 {
+                font-family: var(--header-font);
+                font-size: 1.3rem;
+                margin-bottom: 1.5rem;
+                font-weight: 600;
             }
 
             .results-container {
-                max-height: 400px;
+                max-height: 550px;
                 overflow-y: auto;
-                border: 1px solid #e9ecef;
-                border-radius: 8px;
-                padding: 15px;
-                background: white;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                padding: 0;
+                background: var(--container-bg);
             }
 
             .results-table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-top: 10px;
+                margin-top: 0;
             }
 
             .results-table th,
             .results-table td {
-                padding: 8px 12px;
-                text-align: center;
-                border-bottom: 1px solid #e9ecef;
+                padding: 14px 18px;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+                white-space: nowrap;
             }
 
             .results-table th {
-                background: #f8f9fa;
+                background: #f9f9f9;
                 font-weight: 600;
-                color: #495057;
+                color: var(--secondary-color);
                 position: sticky;
                 top: 0;
                 z-index: 1;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .results-table tr:last-child td {
+                border-bottom: none;
             }
 
             .results-table tr:hover {
-                background: #f8f9fa;
+                background: #f5f5f5;
+            }
+
+            .results-table td:nth-child(1) {
+                font-weight: 600;
+                color: var(--secondary-color);
             }
 
             .no-results {
                 text-align: center;
                 color: #6c757d;
-                font-style: italic;
-                padding: 40px 20px;
+                font-style: normal;
+                padding: 60px 20px;
+                background: #fcfcfc;
+                border-radius: 4px;
+                border: 1px solid var(--border-color);
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="header">
-                <h1>DDA Line Drawing Algorithm</h1>
+            <header class="header">
+                <h1>DDA Algorithm Analysis Tool</h1>
                 <p>
-                    Interactive WebAssembly implementation with real-time
-                    visualization
+                    A WebAssembly-powered tool for analyzing the Digital
+                    Differential Analyzer line drawing algorithm.
                 </p>
-            </div>
+            </header>
 
-            <div class="main-content">
-                <div class="input-section">
-                    <div class="card">
-                        <h2>📊 Input Coordinates</h2>
+            <main class="main-content">
+                <aside class="input-section">
+                    <h2>Parameters</h2>
 
-                        <div class="input-group">
-                            <div class="input-field">
-                                <label for="x1">Start X (x₁)</label>
-                                <input type="number" id="x1" value="0" />
-                                <div class="error-message" id="x1-error">
-                                    Value must be between -5000 and 5000
-                                </div>
-                            </div>
-                            <div class="input-field">
-                                <label for="y1">Start Y (y₁)</label>
-                                <input type="number" id="y1" value="0" />
-                                <div class="error-message" id="y1-error">
-                                    Value must be between -5000 and 5000
-                                </div>
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label for="x1">Start X (x₁)</label>
+                            <input type="number" id="x1" value="0" />
+                            <div class="error-message" id="x1-error">
+                                Value must be between -5000 and 5000
                             </div>
                         </div>
-
-                        <div class="input-group">
-                            <div class="input-field">
-                                <label for="x2">End X (x₂)</label>
-                                <input type="number" id="x2" value="10" />
-                                <div class="error-message" id="x2-error">
-                                    Value must be between -5000 and 5000
-                                </div>
-                            </div>
-                            <div class="input-field">
-                                <label for="y2">End Y (y₂)</label>
-                                <input type="number" id="y2" value="5" />
-                                <div class="error-message" id="y2-error">
-                                    Value must be between -5000 and 5000
-                                </div>
+                        <div class="input-field">
+                            <label for="y1">Start Y (y₁)</label>
+                            <input type="number" id="y1" value="0" />
+                            <div class="error-message" id="y1-error">
+                                Value must be between -5000 and 5000
                             </div>
                         </div>
-
-                        <div class="button-group">
-                            <button
-                                class="btn btn-primary"
-                                onclick="calculateDDA()"
-                            >
-                                Calculate DDA Points
-                            </button>
-                            <button
-                                class="btn btn-outline"
-                                onclick="clearResults()"
-                            >
-                                Clear Results
-                            </button>
-                        </div>
-
-                        <div class="loading-spinner" id="loadingSpinner"></div>
                     </div>
-                </div>
 
-                <div class="results-section">
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label for="x2">End X (x₂)</label>
+                            <input type="number" id="x2" value="10" />
+                            <div class="error-message" id="x2-error">
+                                Value must be between -5000 and 5000
+                            </div>
+                        </div>
+                        <div class="input-field">
+                            <label for="y2">End Y (y₂)</label>
+                            <input type="number" id="y2" value="5" />
+                            <div class="error-message" id="y2-error">
+                                Value must be between -5000 and 5000
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button
+                            class="btn btn-primary"
+                            onclick="calculateDDA()"
+                        >
+                            Calculate DDA Points
+                        </button>
+                        <button
+                            class="btn btn-outline"
+                            onclick="clearResults()"
+                        >
+                            Clear Results
+                        </button>
+                    </div>
+
+                    <div class="loading-spinner" id="loadingSpinner"></div>
+                </aside>
+
+                <section class="results-section">
                     <div
                         class="status-indicator status-ready"
                         id="statusIndicator"
@@ -416,7 +476,7 @@
                         style="display: none"
                         class="summary-card"
                     >
-                        <h3>📈 Line Analysis</h3>
+                        <h3>Line Analysis</h3>
                         <div class="summary-stats">
                             <div class="stat-item">
                                 <span class="stat-value" id="totalPoints"
@@ -428,11 +488,11 @@
                                 <span class="stat-value" id="lineLength"
                                     >0</span
                                 >
-                                <span class="stat-label">Length</span>
+                                <span class="stat-label">Euclidean Length</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-value" id="lineSlope">0</span>
-                                <span class="stat-label">Slope</span>
+                                <span class="stat-label">Slope (m)</span>
                             </div>
                         </div>
                     </div>
@@ -440,36 +500,34 @@
                     <div id="resultsContainer">
                         <div class="no-results">
                             Enter coordinates and click "Calculate DDA Points"
-                            to see the line drawing algorithm in action.
+                            to see the algorithm output.
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
+            </main>
         </div>
 
         <script>
             var Module = {
                 locateFile: function (path) {
-                    // Add cache-busting to WASM file
                     if (path.endsWith(".wasm")) {
                         return path + "?v=" + Date.now();
                     }
                     return path;
                 },
                 onRuntimeInitialized: function () {
-                    // Check if we have the new functions
                     if (
                         Module._get_dda_points_array &&
                         typeof Module._get_dda_points_array === "function"
                     ) {
                         updateStatus(
                             "ready",
-                            "✅ WebAssembly module loaded successfully!"
+                            "WebAssembly module loaded successfully."
                         );
                     } else {
                         updateStatus(
                             "error",
-                            "❌ Old cached module detected. Try hard refresh (Ctrl+F5)"
+                            "Old cached module detected. Try hard refresh (Ctrl+F5)"
                         );
                     }
                 },
@@ -482,7 +540,6 @@
             };
         </script>
         <script>
-            // Add cache-busting parameter to force fresh load
             const cacheBuster = Date.now();
             const script = document.createElement("script");
             script.src = `dda.js?v=${cacheBuster}`;
@@ -493,7 +550,6 @@
                 console.error(
                     "Failed to load WebAssembly script, falling back to cached version"
                 );
-                // Fallback to regular script tag
                 const fallbackScript = document.createElement("script");
                 fallbackScript.src = "dda.js";
                 document.head.appendChild(fallbackScript);
@@ -542,7 +598,6 @@
                 const isX2Valid = validateInput("x2", x2);
                 const isY2Valid = validateInput("y2", y2);
 
-                // Calculate expected points
                 const dx = Math.abs(x2 - x1);
                 const dy = Math.abs(y2 - y1);
                 const totalPoints = Math.max(dx, dy) + 1;
@@ -560,7 +615,6 @@
                     });
                     return false;
                 } else {
-                    // Reset error messages to default
                     ["x1", "y1", "x2", "y2"].forEach((id) => {
                         const errorElement = document.getElementById(
                             id + "-error"
@@ -570,38 +624,21 @@
                     });
                 }
 
-                const allValid =
-                    isX1Valid && isY1Valid && isX2Valid && isY2Valid;
-                return allValid;
+                return isX1Valid && isY1Valid && isX2Valid && isY2Valid;
             }
 
             function calculateDDA() {
-                // Check if WebAssembly module is ready
-                const hasNewFunction =
-                    Module._get_dda_points_array &&
-                    typeof Module._get_dda_points_array === "function";
-
-                const hasOldFunction =
-                    Module._calculate_dda &&
-                    typeof Module._calculate_dda === "function";
-
-                if (!hasNewFunction && !hasOldFunction) {
+                if (
+                    !Module._get_dda_points_array ||
+                    typeof Module._get_dda_points_array !== "function"
+                ) {
                     updateStatus(
                         "error",
-                        "WebAssembly module not loaded yet. Please wait..."
+                        "WebAssembly module not ready. Please wait or refresh."
                     );
                     return;
                 }
 
-                if (!hasNewFunction && hasOldFunction) {
-                    updateStatus(
-                        "error",
-                        "Please refresh the page to load the updated WebAssembly module"
-                    );
-                    return;
-                }
-
-                // Validate inputs
                 if (!validateAllInputs()) {
                     updateStatus(
                         "error",
@@ -613,83 +650,49 @@
                 showLoading(true);
                 updateStatus("processing", "Calculating DDA points...");
 
-                // Get input values
                 const x1 = parseInt(document.getElementById("x1").value);
                 const y1 = parseInt(document.getElementById("y1").value);
                 const x2 = parseInt(document.getElementById("x2").value);
                 const y2 = parseInt(document.getElementById("y2").value);
 
+                let outputArrayPtr = 0;
+                let totalPointsPtr = 0;
+
                 try {
-                    // Calculate expected points for memory allocation
                     const deltaX = Math.abs(x2 - x1);
                     const deltaY = Math.abs(y2 - y1);
                     const expectedPoints = Math.max(deltaX, deltaY) + 1;
 
-                    // Step 1: Allocate memory for output array (2 floats per point: x, y)
-                    const arraySize = expectedPoints * 2; // x, y for each point
-                    const arrayBytes = arraySize * 4; // 4 bytes per float
-
-                    const outputArrayPtr = Module._malloc(arrayBytes);
-
-                    if (!outputArrayPtr || outputArrayPtr === 0) {
-                        updateStatus(
-                            "error",
+                    const arrayBytes = expectedPoints * 2 * 4; // 2 floats per point, 4 bytes per float
+                    outputArrayPtr = Module._malloc(arrayBytes);
+                    if (!outputArrayPtr)
+                        throw new Error(
                             "Failed to allocate memory for output array"
                         );
-                        return;
-                    }
 
-                    // Step 2: Allocate memory for total points counter
-                    const totalPointsPtr = Module._malloc(4);
-
-                    if (!totalPointsPtr || totalPointsPtr === 0) {
-                        updateStatus(
-                            "error",
+                    totalPointsPtr = Module._malloc(4); // 4 bytes for one integer
+                    if (!totalPointsPtr)
+                        throw new Error(
                             "Failed to allocate memory for point counter"
                         );
-                        Module._free(outputArrayPtr);
-                        return;
-                    }
 
-                    // Step 3: Call the array-based DDA function
-                    try {
-                        Module._get_dda_points_array(
-                            x1,
-                            y1,
-                            x2,
-                            y2,
-                            outputArrayPtr,
-                            totalPointsPtr
-                        );
-                    } catch (wasmError) {
-                        updateStatus(
-                            "error",
-                            `WebAssembly function failed: ${wasmError.message}`
-                        );
-                        Module._free(outputArrayPtr);
-                        Module._free(totalPointsPtr);
-                        showLoading(false);
-                        return;
-                    }
+                    Module._get_dda_points_array(
+                        x1,
+                        y1,
+                        x2,
+                        y2,
+                        outputArrayPtr,
+                        totalPointsPtr
+                    );
 
-                    // Step 4: Read total points from memory
                     const actualPoints = Module.HEAP32[totalPointsPtr / 4];
 
-                    if (
-                        actualPoints <= 0 ||
-                        actualPoints > expectedPoints * 2
-                    ) {
-                        updateStatus(
-                            "error",
+                    if (actualPoints <= 0 || actualPoints > expectedPoints) {
+                        throw new Error(
                             `Invalid point count returned: ${actualPoints}`
                         );
-                        Module._free(outputArrayPtr);
-                        Module._free(totalPointsPtr);
-                        showLoading(false);
-                        return;
                     }
 
-                    // Step 5: Read points from memory
                     const points = [];
                     const floatView = new Float32Array(
                         Module.HEAPF32.buffer,
@@ -698,36 +701,29 @@
                     );
 
                     for (let i = 0; i < actualPoints; i++) {
-                        const x = floatView[i * 2];
-                        const y = floatView[i * 2 + 1];
-                        points.push({ x: x, y: y });
+                        points.push({
+                            x: floatView[i * 2],
+                            y: floatView[i * 2 + 1],
+                        });
                     }
 
-                    // Clean up memory
-                    Module._free(outputArrayPtr);
-                    Module._free(totalPointsPtr);
-
-                    // Calculate slope for display
-                    let slope = "undefined";
-                    try {
+                    let slope = "Undefined";
+                    if (Module._calculate_slope) {
                         const calculatedSlope = Module._calculate_slope(
                             x1,
                             y1,
                             x2,
                             y2
                         );
-                        if (isFinite(calculatedSlope)) {
-                            slope = calculatedSlope.toFixed(3);
+                        if (Math.abs(calculatedSlope) < 999999) {
+                            slope = calculatedSlope.toFixed(4);
                         }
-                    } catch (e) {
-                        slope = "N/A";
                     }
 
-                    // Display results
                     displayResults(points, x1, y1, x2, y2, slope);
                     updateStatus(
                         "success",
-                        `✅ Successfully calculated ${points.length} DDA points`
+                        `Successfully calculated ${points.length} DDA points.`
                     );
                 } catch (error) {
                     updateStatus(
@@ -735,12 +731,13 @@
                         `Calculation failed: ${error.message}`
                     );
                 } finally {
+                    if (outputArrayPtr) Module._free(outputArrayPtr);
+                    if (totalPointsPtr) Module._free(totalPointsPtr);
                     showLoading(false);
                 }
             }
 
             function displayResults(points, x1, y1, x2, y2, slope) {
-                // Update summary card
                 const summaryCard = document.getElementById("summaryCard");
                 document.getElementById("totalPoints").textContent =
                     points.length;
@@ -752,23 +749,22 @@
 
                 summaryCard.style.display = "block";
 
-                // Create results table
                 let html = `
-                    <div class="results-container">
-                        <h3>📍 DDA Points (${points.length} total)</h3>
-                        <table class="results-table">
-                            <thead>
-                                <tr>
-                                    <th>Step</th>
-                                    <th>Current X</th>
-                                    <th>Current Y</th>
-                                    <th>Next X</th>
-                                    <th>Next Y</th>
-                                    <th>Rounded-Coordinates</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
+                <div class="results-container">
+                    <h3>Algorithm Output (${points.length} points)</h3>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Step</th>
+                                <th>Current X</th>
+                                <th>Current Y</th>
+                                <th>Next X</th>
+                                <th>Next Y</th>
+                                <th>Plot Coordinate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
 
                 points.forEach((point, index) => {
                     const nextPoint =
@@ -784,23 +780,23 @@
                             <td>${point.y.toFixed(3)}</td>
                             <td>${nextPoint.x.toFixed(3)}</td>
                             <td>${nextPoint.y.toFixed(3)}</td>
-                            <td>${roundedCoords}</td>
+                            <td><b>${roundedCoords}</b></td>
                         </tr>
                     `;
                 });
 
                 html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
+                        </tbody>
+                    </table>
+                </div>
+            `;
 
                 document.getElementById("resultsContainer").innerHTML = html;
             }
 
             function clearResults() {
                 document.getElementById("resultsContainer").innerHTML =
-                    '<div class="no-results">Enter coordinates and click "Calculate DDA Points" to see the line drawing algorithm in action.</div>';
+                    '<div class="no-results">Enter coordinates and click "Calculate DDA Points" to see the algorithm output.</div>';
                 document.getElementById("summaryCard").style.display = "none";
                 updateStatus(
                     "ready",
@@ -808,7 +804,6 @@
                 );
             }
 
-            // Enhanced event listeners
             document.addEventListener("DOMContentLoaded", function () {
                 const inputs = document.querySelectorAll(
                     'input[type="number"]'
@@ -820,6 +815,7 @@
 
                     input.addEventListener("keypress", function (e) {
                         if (e.key === "Enter") {
+                            e.preventDefault();
                             calculateDDA();
                         }
                     });
