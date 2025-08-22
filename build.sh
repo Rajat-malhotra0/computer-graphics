@@ -12,13 +12,17 @@ if ! command -v emcc &> /dev/null; then
 fi
 
 # Create dist directory for production build
+# Ensure fresh dist directory
 mkdir -p dist
 
+# Optional: clean old build artifacts in dist (retain index.html until copied)
+rm -f dist/dda.js dist/dda.wasm
+
 # Compile C code to WebAssembly with production optimizations
-echo "Compiling main.c to WebAssembly..."
-emcc main.c -o dda.js \
-    -s EXPORTED_FUNCTIONS='["_get_dda_points_array", "_calculate_slope", "_get_point_size", "_test_memory_allocation", "_malloc", "_free"]' \
-    -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "HEAP8", "HEAP32", "HEAPF32"]' \
+echo "Compiling main.c to WebAssembly (output -> dist/)..."
+emcc main.c -o dist/dda.js \
+    -s EXPORTED_FUNCTIONS='["_get_dda_points_array","_calculate_slope","_get_point_size","_test_memory_allocation","_malloc","_free"]' \
+    -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","getValue","setValue","HEAP8","HEAP32","HEAPF32"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MODULARIZE=0 \
     -s EXPORT_NAME="Module" \
@@ -36,16 +40,14 @@ emcc main.c -o dda.js \
 if [ $? -eq 0 ]; then
     echo "✅ WebAssembly compilation successful!"
     
-    # Copy files to dist directory for production
-    cp dda.js dist/
-    cp dda.wasm dist/
+    # Copy HTML entrypoint to dist
     cp index.html dist/
     
     echo "✅ Files copied to dist/ directory"
     echo "📦 Production build ready for deployment!"
     echo ""
     echo "Generated files:"
-    echo "  - dist/dda.js (JavaScript glue code)"
+    echo "  - dist/dda.js (JavaScript glue + WASM loader)"
     echo "  - dist/dda.wasm (WebAssembly binary)"
     echo "  - dist/index.html (Web interface)"
     echo ""
