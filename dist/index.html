@@ -86,6 +86,7 @@
                 gap: 2rem;
                 border-right: 1px solid var(--border-color);
                 padding-right: 3rem;
+                min-width: 0; /* Prevents this column from overflowing */
             }
 
             .input-section h2 {
@@ -125,6 +126,7 @@
                 font-family: var(--body-font);
                 transition: border-color 0.2s ease, box-shadow 0.2s ease;
                 background: #f9f9f9;
+                width: 100%;
             }
 
             .input-field input:focus {
@@ -220,6 +222,7 @@
                 display: flex;
                 flex-direction: column;
                 gap: 2rem;
+                min-width: 0; /* Prevents this column from overflowing */
             }
 
             .results-section > * {
