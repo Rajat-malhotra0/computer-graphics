@@ -75,8 +75,10 @@
 
             .main-content {
                 display: grid;
-                grid-template-columns: 1fr 4fr; /* 20% to 80% ratio */
-                gap: 2.5rem;
+                /* Adjust the grid to be more precise. The first column is exactly 20%
+                   and the second takes the rest of the space minus the gap. */
+                grid-template-columns: 20% 1fr;
+                gap: 2rem;
                 padding: 2.5rem;
             }
 
