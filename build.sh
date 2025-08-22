@@ -17,7 +17,7 @@ mkdir -p dist
 # Compile C code to WebAssembly with production optimizations
 echo "Compiling main.c to WebAssembly..."
 emcc main.c -o dda.js \
-    -s EXPORTED_FUNCTIONS='["_calculate_dda", "_calculate_slope", "_get_point_size", "_test_memory_allocation", "_malloc", "_free"]' \
+    -s EXPORTED_FUNCTIONS='["_get_dda_points_array", "_calculate_slope", "_get_point_size", "_test_memory_allocation", "_malloc", "_free"]' \
     -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "HEAP8", "HEAP32", "HEAPF32"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MODULARIZE=0 \
