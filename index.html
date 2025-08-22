@@ -49,263 +49,219 @@
 
             .main-content {
                 display: grid;
-                grid-template-columns: 1fr 2fr;
-                gap: 0;
-                min-height: 600px;
+                grid-template-columns: 1fr 3fr;
+                gap: 30px;
+                padding: 30px;
             }
 
             .input-section {
-                background: #f8f9fa;
-                padding: 40px;
-                border-right: 1px solid #e9ecef;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
             }
 
-            .input-section h3 {
+            .results-section {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .card {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 25px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+
+            .card h2 {
                 color: #2c3e50;
-                margin-bottom: 25px;
-                font-size: 1.3rem;
-                font-weight: 500;
+                margin-bottom: 20px;
+                font-size: 1.5rem;
+                font-weight: 400;
             }
 
             .input-group {
-                margin-bottom: 20px;
-            }
-
-            .input-group label {
-                display: block;
-                margin-bottom: 8px;
-                font-weight: 500;
-                color: #555;
-            }
-
-            .input-group input {
-                width: 100%;
-                padding: 12px 15px;
-                border: 2px solid #e9ecef;
-                border-radius: 8px;
-                font-size: 16px;
-                transition: border-color 0.3s ease;
-                background: white;
-            }
-
-            .input-group input:focus {
-                outline: none;
-                border-color: #3498db;
-                box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-            }
-
-            .input-group input.error {
-                border-color: #e74c3c;
-                background-color: #fdf2f2;
-                box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
-            }
-
-            .input-group input.error:focus {
-                border-color: #e74c3c;
-                box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
-            }
-
-            .error-message {
-                color: #e74c3c;
-                font-size: 12px;
-                margin-top: 5px;
-                display: none;
-            }
-
-            .error-message.show {
-                display: block;
-            }
-
-            .coordinate-row {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 15px;
-                margin-bottom: 25px;
+                margin-bottom: 20px;
+            }
+
+            .input-field {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .input-field label {
+                font-weight: 500;
+                color: #555;
+                font-size: 0.9rem;
+            }
+
+            .input-field input {
+                padding: 12px;
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+                font-size: 1rem;
+                transition: border-color 0.3s ease;
+            }
+
+            .input-field input:focus {
+                outline: none;
+                border-color: #007bff;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            }
+
+            .input-field input.error {
+                border-color: #dc3545;
+                background-color: #fdf2f2;
+            }
+
+            .error-message {
+                color: #dc3545;
+                font-size: 0.8rem;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                min-height: 1rem;
+            }
+
+            .error-message.show {
+                opacity: 1;
             }
 
             .button-group {
                 display: flex;
-                flex-direction: column;
-                gap: 12px;
-                margin-top: 30px;
+                gap: 15px;
+                margin-top: 20px;
             }
 
             .btn {
-                padding: 12px 20px;
+                padding: 12px 24px;
                 border: none;
                 border-radius: 8px;
-                font-size: 16px;
+                font-size: 1rem;
                 font-weight: 500;
                 cursor: pointer;
                 transition: all 0.3s ease;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .btn-primary {
-                background: #3498db;
+                background: #007bff;
                 color: white;
             }
 
-            .btn-secondary {
-                background: #2c3e50;
-                color: white;
+            .btn-primary:hover {
+                background: #0056b3;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
             }
 
             .btn-outline {
                 background: transparent;
-                color: #3498db;
-                border: 2px solid #3498db;
+                color: #6c757d;
+                border: 2px solid #6c757d;
             }
 
-            .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            .btn-outline:hover {
+                background: #6c757d;
+                color: white;
             }
 
-            .btn:active {
-                transform: translateY(0);
+            .loading-spinner {
+                display: none;
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #007bff;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 20px auto;
             }
 
-            .output-section {
-                padding: 40px;
-                background: white;
-            }
-
-            .output-section h3 {
-                color: #2c3e50;
-                margin-bottom: 25px;
-                font-size: 1.3rem;
-                font-weight: 500;
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
             }
 
             .status-indicator {
-                display: inline-block;
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 14px;
+                padding: 12px 20px;
+                border-radius: 8px;
                 font-weight: 500;
+                text-align: center;
                 margin-bottom: 20px;
+                transition: all 0.3s ease;
             }
 
             .status-ready {
                 background: #d4edda;
                 color: #155724;
+                border: 1px solid #c3e6cb;
             }
 
-            .status-loading {
+            .status-processing {
                 background: #fff3cd;
                 color: #856404;
+                border: 1px solid #ffeaa7;
+            }
+
+            .status-success {
+                background: #d1ecf1;
+                color: #0c5460;
+                border: 1px solid #bee5eb;
             }
 
             .status-error {
                 background: #f8d7da;
                 color: #721c24;
+                border: 1px solid #f5c6cb;
             }
 
-            .results-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-                background: white;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            }
-
-            .results-table th {
-                background: #34495e;
-                color: white;
-                padding: 15px;
-                text-align: center;
-                font-weight: 500;
-                font-size: 14px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-
-            .results-table td {
-                padding: 12px 15px;
-                border-bottom: 1px solid #e9ecef;
-                font-family: "Courier New", monospace;
-                text-align: center;
-            }
-
-            .results-table tr:nth-child(even) {
-                background: #f8f9fa;
-            }
-
-            .results-table tr:hover {
-                background: #ecf0f1;
+            .status-info {
+                background: #d1ecf1;
+                color: #0c5460;
+                border: 1px solid #bee5eb;
             }
 
             .summary-card {
-                background: #34495e;
-                color: white;
+                background: #e8f4fd;
+                border: 1px solid #bee5eb;
+                border-radius: 10px;
                 padding: 20px;
-                border-radius: 8px;
                 margin-bottom: 20px;
-            }
-
-            .summary-card h4 {
-                margin-bottom: 10px;
-                font-size: 1.1rem;
             }
 
             .summary-stats {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
                 gap: 15px;
-                margin-top: 15px;
+                text-align: center;
             }
 
             .stat-item {
-                text-align: center;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
             }
 
             .stat-value {
                 font-size: 1.5rem;
                 font-weight: bold;
-                display: block;
+                color: #2c3e50;
             }
 
             .stat-label {
                 font-size: 0.9rem;
-                opacity: 0.9;
-            }
-
-            .no-results {
-                text-align: center;
-                padding: 40px;
                 color: #6c757d;
                 font-style: italic;
-            }
-
-            .debug-panel {
-                background: #f8f9fa;
-                border: 1px solid #e9ecef;
-                border-radius: 8px;
-                padding: 15px;
-                margin-bottom: 20px;
-                font-family: "Courier New", monospace;
-                font-size: 12px;
-                max-height: 200px;
-                overflow-y: auto;
-            }
-
-            .debug-panel h5 {
-                margin-bottom: 10px;
-                color: #2c3e50;
-                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            }
-
-            .debug-log {
-                background: #fff;
-                border: 1px solid #dee2e6;
-                border-radius: 4px;
-                padding: 8px;
-                margin-bottom: 5px;
-                white-space: pre-wrap;
             }
 
             @media (max-width: 768px) {
@@ -319,167 +275,63 @@
 
                 .main-content {
                     grid-template-columns: 1fr;
-                }
-
-                .input-section,
-                .output-section {
-                    padding: 20px;
-                }
-
-                .input-section {
-                    border-right: none;
-                    border-bottom: 1px solid #e9ecef;
-                }
-
-                .coordinate-row {
-                    grid-template-columns: 1fr;
-                    gap: 10px;
-                }
-
-                .header {
+                    gap: 20px;
                     padding: 20px;
                 }
 
                 .header h1 {
-                    font-size: 1.8rem;
-                    margin-bottom: 8px;
+                    font-size: 2rem;
                 }
 
-                .header p {
-                    font-size: 1rem;
+                .input-group {
+                    grid-template-columns: 1fr;
                 }
 
-                /* Mobile-optimized buttons */
                 .button-group {
-                    gap: 8px;
-                }
-
-                .btn {
-                    padding: 14px 20px;
-                    font-size: 14px;
-                    border-radius: 6px;
-                }
-
-                /* Mobile table - make it scrollable */
-                .results-table {
-                    font-size: 12px;
-                    display: block;
-                    overflow-x: auto;
-                    white-space: nowrap;
-                    -webkit-overflow-scrolling: touch;
-                }
-
-                .results-table thead,
-                .results-table tbody,
-                .results-table th,
-                .results-table td,
-                .results-table tr {
-                    display: block;
-                }
-
-                .results-table thead tr {
-                    position: absolute;
-                    top: -9999px;
-                    left: -9999px;
-                }
-
-                .results-table tr {
-                    border: 1px solid #e9ecef;
-                    margin-bottom: 10px;
-                    border-radius: 8px;
-                    background: white;
-                    padding: 15px;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-
-                .results-table td {
-                    border: none;
-                    position: relative;
-                    padding: 8px 0 8px 35%;
-                    text-align: left;
-                    white-space: normal;
-                }
-
-                .results-table td:before {
-                    content: attr(data-label) ": ";
-                    position: absolute;
-                    left: 6px;
-                    width: 30%;
-                    padding-right: 10px;
-                    white-space: nowrap;
-                    font-weight: bold;
-                    color: #34495e;
-                }
-
-                /* Summary stats mobile optimization */
-                .summary-stats {
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 10px;
-                }
-
-                .stat-value {
-                    font-size: 1.2rem;
-                }
-
-                .stat-label {
-                    font-size: 0.8rem;
-                }
-
-                /* Mobile input optimization */
-                .input-group input {
-                    font-size: 16px; /* Prevent zoom on iOS */
-                    padding: 14px 15px;
-                }
-
-                .input-group label {
-                    font-size: 14px;
+                    flex-direction: column;
                 }
             }
 
-            /* Extra small mobile devices */
-            @media (max-width: 480px) {
-                .header h1 {
-                    font-size: 1.5rem;
-                }
-
-                .header p {
-                    font-size: 0.9rem;
-                }
-
-                .input-section,
-                .output-section {
-                    padding: 15px;
-                }
-
-                .summary-stats {
-                    grid-template-columns: 1fr;
-                    text-align: center;
-                }
-
-                .btn {
-                    padding: 12px 16px;
-                    font-size: 13px;
-                }
+            .results-container {
+                max-height: 400px;
+                overflow-y: auto;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 15px;
+                background: white;
             }
 
-            .loading-spinner {
-                display: none;
-                width: 20px;
-                height: 20px;
-                border: 2px solid #f3f3f3;
-                border-top: 2px solid #3498db;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 0 auto;
+            .results-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
             }
 
-            @keyframes spin {
-                0% {
-                    transform: rotate(0deg);
-                }
-                100% {
-                    transform: rotate(360deg);
-                }
+            .results-table th,
+            .results-table td {
+                padding: 8px 12px;
+                text-align: center;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .results-table th {
+                background: #f8f9fa;
+                font-weight: 600;
+                color: #495057;
+                position: sticky;
+                top: 0;
+                z-index: 1;
+            }
+
+            .results-table tr:hover {
+                background: #f8f9fa;
+            }
+
+            .no-results {
+                text-align: center;
+                color: #6c757d;
+                font-style: italic;
+                padding: 40px 20px;
             }
         </style>
     </head>
@@ -488,76 +340,70 @@
             <div class="header">
                 <h1>DDA Line Drawing Algorithm</h1>
                 <p>
-                    WebAssembly Implementation - Interactive Digital
-                    Differential Analyzer
+                    Interactive WebAssembly implementation with real-time
+                    visualization
                 </p>
             </div>
 
             <div class="main-content">
                 <div class="input-section">
-                    <h3>Coordinate Input</h3>
+                    <div class="card">
+                        <h2>📊 Input Coordinates</h2>
 
-                    <div class="coordinate-row">
                         <div class="input-group">
-                            <label for="x1">Start X</label>
-                            <input type="number" id="x1" value="0" />
-                            <div class="error-message" id="x1-error">
-                                Value must be between -5000 and 5000
+                            <div class="input-field">
+                                <label for="x1">Start X (x₁)</label>
+                                <input type="number" id="x1" value="0" />
+                                <div class="error-message" id="x1-error">
+                                    Value must be between -5000 and 5000
+                                </div>
+                            </div>
+                            <div class="input-field">
+                                <label for="y1">Start Y (y₁)</label>
+                                <input type="number" id="y1" value="0" />
+                                <div class="error-message" id="y1-error">
+                                    Value must be between -5000 and 5000
+                                </div>
                             </div>
                         </div>
+
                         <div class="input-group">
-                            <label for="y1">Start Y</label>
-                            <input type="number" id="y1" value="0" />
-                            <div class="error-message" id="y1-error">
-                                Value must be between -5000 and 5000
+                            <div class="input-field">
+                                <label for="x2">End X (x₂)</label>
+                                <input type="number" id="x2" value="10" />
+                                <div class="error-message" id="x2-error">
+                                    Value must be between -5000 and 5000
+                                </div>
+                            </div>
+                            <div class="input-field">
+                                <label for="y2">End Y (y₂)</label>
+                                <input type="number" id="y2" value="5" />
+                                <div class="error-message" id="y2-error">
+                                    Value must be between -5000 and 5000
+                                </div>
                             </div>
                         </div>
+
+                        <div class="button-group">
+                            <button
+                                class="btn btn-primary"
+                                onclick="calculateDDA()"
+                            >
+                                Calculate DDA Points
+                            </button>
+                            <button
+                                class="btn btn-outline"
+                                onclick="clearResults()"
+                            >
+                                Clear Results
+                            </button>
+                        </div>
+
+                        <div class="loading-spinner" id="loadingSpinner"></div>
                     </div>
-
-                    <div class="coordinate-row">
-                        <div class="input-group">
-                            <label for="x2">End X</label>
-                            <input type="number" id="x2" value="10" />
-                            <div class="error-message" id="x2-error">
-                                Value must be between -5000 and 5000
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="y2">End Y</label>
-                            <input type="number" id="y2" value="5" />
-                            <div class="error-message" id="y2-error">
-                                Value must be between -5000 and 5000
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="button-group">
-                        <button
-                            class="btn btn-primary"
-                            onclick="calculateDDA()"
-                        >
-                            Calculate DDA Points
-                        </button>
-                        <button
-                            class="btn btn-outline"
-                            onclick="clearResults()"
-                        >
-                            Clear Results
-                        </button>
-                        <button
-                            class="btn btn-secondary"
-                            onclick="forceReload()"
-                            title="Force reload WebAssembly module"
-                        >
-                            🔄 Force Reload
-                        </button>
-                    </div>
-
-                    <div class="loading-spinner" id="loadingSpinner"></div>
                 </div>
 
-                <div class="output-section">
-                    <h3>Results</h3>
+                <div class="results-section">
                     <div
                         class="status-indicator status-ready"
                         id="statusIndicator"
@@ -565,17 +411,12 @@
                         Ready to calculate
                     </div>
 
-                    <div class="debug-panel" id="debugPanel">
-                        <h5>Debug Log</h5>
-                        <div id="debugOutput">Console initialized...</div>
-                    </div>
-
                     <div
                         id="summaryCard"
                         style="display: none"
                         class="summary-card"
                     >
-                        <h4 id="summaryTitle">Line Analysis</h4>
+                        <h3>📈 Line Analysis</h3>
                         <div class="summary-stats">
                             <div class="stat-item">
                                 <span class="stat-value" id="totalPoints"
@@ -607,34 +448,6 @@
         </div>
 
         <script>
-            // Enhanced debug logging system
-            const DEBUG = true;
-            let debugLogs = [];
-
-            function debugLog(message, type = "info") {
-                const timestamp = new Date().toLocaleTimeString();
-                const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
-
-                debugLogs.push(logEntry);
-
-                // Keep only last 20 logs
-                if (debugLogs.length > 20) {
-                    debugLogs.shift();
-                }
-
-                // Update debug panel
-                const debugOutput = document.getElementById("debugOutput");
-                if (debugOutput) {
-                    debugOutput.innerHTML = debugLogs
-                        .map((log) => `<div class="debug-log">${log}</div>`)
-                        .join("");
-                    debugOutput.scrollTop = debugOutput.scrollHeight;
-                }
-
-                // Also log to console
-                console.log(logEntry);
-            }
-
             var Module = {
                 locateFile: function (path) {
                     // Add cache-busting to WASM file
@@ -644,54 +457,6 @@
                     return path;
                 },
                 onRuntimeInitialized: function () {
-                    debugLog("WebAssembly runtime initialized successfully");
-
-                    // List ALL available functions for debugging
-                    const allFunctions = Object.keys(Module).filter((key) =>
-                        key.startsWith("_")
-                    );
-                    debugLog(
-                        `Available Module functions: ${allFunctions.join(", ")}`
-                    );
-
-                    // Specifically check for the functions we need
-                    debugLog("Function availability check:");
-                    debugLog(
-                        `_get_dda_points_array: ${typeof Module._get_dda_points_array}`
-                    );
-                    debugLog(
-                        `_calculate_slope: ${typeof Module._calculate_slope}`
-                    );
-                    debugLog(
-                        `_get_point_size: ${typeof Module._get_point_size}`
-                    );
-                    debugLog(
-                        `_test_memory_allocation: ${typeof Module._test_memory_allocation}`
-                    );
-                    debugLog(`_malloc: ${typeof Module._malloc}`);
-                    debugLog(`_free: ${typeof Module._free}`);
-
-                    // Legacy function check
-                    if (Module._calculate_dda) {
-                        debugLog(
-                            "WARNING: Legacy _calculate_dda function still present"
-                        );
-                    }
-
-                    // Log memory information
-                    if (Module.HEAPF32) {
-                        debugLog(
-                            `Initial heap size: HEAPF32.length=${
-                                Module.HEAPF32.length
-                            } (${Module.HEAPF32.length * 4} bytes)`
-                        );
-                    }
-                    if (Module.HEAP8) {
-                        debugLog(
-                            `Initial heap size: HEAP8.length=${Module.HEAP8.length} bytes`
-                        );
-                    }
-
                     // Check if we have the new functions
                     if (
                         Module._get_dda_points_array &&
@@ -699,7 +464,7 @@
                     ) {
                         updateStatus(
                             "ready",
-                            "✅ Latest WebAssembly module loaded successfully!"
+                            "✅ WebAssembly module loaded successfully!"
                         );
                     } else {
                         updateStatus(
@@ -709,23 +474,12 @@
                     }
                 },
                 onAbort: function (what) {
-                    debugLog(`WebAssembly aborted: ${what}`, "error");
                     updateStatus("error", `WebAssembly error: ${what}`);
                 },
-                print: function (text) {
-                    debugLog(`WASM Output: ${text}`, "wasm");
-                },
-                printErr: function (text) {
-                    debugLog(`WASM Error: ${text}`, "error");
-                },
                 onOutOfMemory: function () {
-                    debugLog("WebAssembly out of memory!", "error");
                     updateStatus("error", "WebAssembly ran out of memory");
                 },
             };
-
-            // Initialize debug logging
-            debugLog("Page loaded, initializing...");
         </script>
         <script>
             // Add cache-busting parameter to force fresh load
@@ -739,7 +493,7 @@
                 console.error(
                     "Failed to load WebAssembly script, falling back to cached version"
                 );
-                // Fallback to regular script load
+                // Fallback to regular script tag
                 const fallbackScript = document.createElement("script");
                 fallbackScript.src = "dda.js";
                 document.head.appendChild(fallbackScript);
@@ -748,20 +502,17 @@
         </script>
         <script>
             function updateStatus(type, message) {
-                debugLog(`Status update: ${type} - ${message}`);
                 const indicator = document.getElementById("statusIndicator");
                 indicator.className = `status-indicator status-${type}`;
                 indicator.textContent = message;
             }
 
             function showLoading(show) {
-                debugLog(`Loading spinner: ${show ? "show" : "hide"}`);
                 const spinner = document.getElementById("loadingSpinner");
                 spinner.style.display = show ? "block" : "none";
             }
 
             function validateInput(inputId, value) {
-                debugLog(`Validating ${inputId}: ${value}`);
                 const input = document.getElementById(inputId);
                 const errorElement = document.getElementById(
                     inputId + "-error"
@@ -770,15 +521,10 @@
                 const MIN_VALUE = -5000;
 
                 if (value < MIN_VALUE || value > MAX_VALUE || isNaN(value)) {
-                    debugLog(
-                        `Validation failed for ${inputId}: ${value}`,
-                        "error"
-                    );
                     input.classList.add("error");
                     errorElement.classList.add("show");
                     return false;
                 } else {
-                    debugLog(`Validation passed for ${inputId}: ${value}`);
                     input.classList.remove("error");
                     errorElement.classList.remove("show");
                     return true;
@@ -786,16 +532,10 @@
             }
 
             function validateAllInputs() {
-                debugLog("Starting comprehensive input validation");
-
                 const x1 = parseInt(document.getElementById("x1").value);
                 const y1 = parseInt(document.getElementById("y1").value);
                 const x2 = parseInt(document.getElementById("x2").value);
                 const y2 = parseInt(document.getElementById("y2").value);
-
-                debugLog(
-                    `Input values: start(${x1}, ${y1}), end(${x2}, ${y2})`
-                );
 
                 const isX1Valid = validateInput("x1", x1);
                 const isY1Valid = validateInput("y1", y1);
@@ -807,15 +547,7 @@
                 const dy = Math.abs(y2 - y1);
                 const totalPoints = Math.max(dx, dy) + 1;
 
-                debugLog(
-                    `Expected calculation: dx=${dx}, dy=${dy}, totalPoints=${totalPoints}`
-                );
-
                 if (totalPoints > 25000) {
-                    debugLog(
-                        `Too many points: ${totalPoints} > 25000`,
-                        "error"
-                    );
                     ["x1", "y1", "x2", "y2"].forEach((id) => {
                         const input = document.getElementById(id);
                         const errorElement = document.getElementById(
@@ -840,26 +572,20 @@
 
                 const allValid =
                     isX1Valid && isY1Valid && isX2Valid && isY2Valid;
-                debugLog(`Overall validation result: ${allValid}`);
                 return allValid;
             }
 
             function calculateDDA() {
-                debugLog("=== Starting DDA Calculation (Array Method) ===");
-
-                // Check if WebAssembly module is ready with fallback support
+                // Check if WebAssembly module is ready
                 const hasNewFunction =
                     Module._get_dda_points_array &&
                     typeof Module._get_dda_points_array === "function";
+
                 const hasOldFunction =
                     Module._calculate_dda &&
                     typeof Module._calculate_dda === "function";
 
                 if (!hasNewFunction && !hasOldFunction) {
-                    debugLog(
-                        "WebAssembly module not ready - no DDA functions available",
-                        "error"
-                    );
                     updateStatus(
                         "error",
                         "WebAssembly module not loaded yet. Please wait..."
@@ -868,10 +594,6 @@
                 }
 
                 if (!hasNewFunction && hasOldFunction) {
-                    debugLog(
-                        "WARNING: Using legacy _calculate_dda function. Please refresh to get updated version.",
-                        "warn"
-                    );
                     updateStatus(
                         "error",
                         "Please refresh the page to load the updated WebAssembly module"
@@ -879,20 +601,8 @@
                     return;
                 }
 
-                debugLog("WebAssembly module is ready with new array function");
-
-                // Enhanced function availability check
-                debugLog("Final function availability check:");
-                debugLog(
-                    `_get_dda_points_array: ${typeof Module._get_dda_points_array}`
-                );
-                debugLog(`_calculate_slope: ${typeof Module._calculate_slope}`);
-                debugLog(`_malloc: ${typeof Module._malloc}`);
-                debugLog(`_free: ${typeof Module._free}`);
-
                 // Validate inputs
                 if (!validateAllInputs()) {
-                    debugLog("Input validation failed", "error");
                     updateStatus(
                         "error",
                         "Please fix the input errors before calculating."
@@ -901,16 +611,13 @@
                 }
 
                 showLoading(true);
-                updateStatus("loading", "Calculating DDA points...");
+                updateStatus("processing", "Calculating DDA points...");
 
+                // Get input values
                 const x1 = parseInt(document.getElementById("x1").value);
                 const y1 = parseInt(document.getElementById("y1").value);
                 const x2 = parseInt(document.getElementById("x2").value);
                 const y2 = parseInt(document.getElementById("y2").value);
-
-                debugLog(
-                    `Final input coordinates: (${x1}, ${y1}) to (${x2}, ${y2})`
-                );
 
                 try {
                     // Calculate expected points for memory allocation
@@ -918,22 +625,13 @@
                     const deltaY = Math.abs(y2 - y1);
                     const expectedPoints = Math.max(deltaX, deltaY) + 1;
 
-                    debugLog(`Expected points: ${expectedPoints}`);
-
                     // Step 1: Allocate memory for output array (2 floats per point: x, y)
                     const arraySize = expectedPoints * 2; // x, y for each point
                     const arrayBytes = arraySize * 4; // 4 bytes per float
 
-                    debugLog(
-                        `Step 1: Allocating array for ${arraySize} floats (${arrayBytes} bytes)`
-                    );
                     const outputArrayPtr = Module._malloc(arrayBytes);
 
                     if (!outputArrayPtr || outputArrayPtr === 0) {
-                        debugLog(
-                            `Array allocation failed: ${outputArrayPtr}`,
-                            "error"
-                        );
                         updateStatus(
                             "error",
                             "Failed to allocate memory for output array"
@@ -941,32 +639,19 @@
                         return;
                     }
 
-                    debugLog(`Output array allocated at: ${outputArrayPtr}`);
-
                     // Step 2: Allocate memory for total points counter
-                    debugLog(
-                        "Step 2: Allocating memory for total points counter"
-                    );
                     const totalPointsPtr = Module._malloc(4);
 
                     if (!totalPointsPtr || totalPointsPtr === 0) {
-                        debugLog(
-                            `Counter allocation failed: ${totalPointsPtr}`,
-                            "error"
-                        );
-                        Module._free(outputArrayPtr);
                         updateStatus(
                             "error",
-                            "Failed to allocate memory for counter"
+                            "Failed to allocate memory for point counter"
                         );
+                        Module._free(outputArrayPtr);
                         return;
                     }
 
-                    debugLog(`Counter allocated at: ${totalPointsPtr}`);
-
-                    // Step 3: Call the new array-based DDA function
-                    debugLog("Step 3: Calling array-based DDA function");
-
+                    // Step 3: Call the array-based DDA function
                     try {
                         Module._get_dda_points_array(
                             x1,
@@ -976,163 +661,101 @@
                             outputArrayPtr,
                             totalPointsPtr
                         );
-                        debugLog(
-                            "DDA array function call completed successfully"
-                        );
                     } catch (wasmError) {
-                        debugLog(
-                            `WebAssembly function call failed: ${wasmError.message}`,
-                            "error"
-                        );
-                        debugLog(`Error type: ${wasmError.name}`, "error");
-                        Module._free(outputArrayPtr);
-                        Module._free(totalPointsPtr);
                         updateStatus(
                             "error",
-                            `WebAssembly call failed: ${wasmError.message}`
-                        );
-                        return;
-                    }
-
-                    // Step 4: Read the total points count
-                    debugLog("Step 4: Reading total points from memory");
-                    const totalPoints = Module.getValue(totalPointsPtr, "i32");
-                    debugLog(`Total points calculated: ${totalPoints}`);
-
-                    // Step 5: Validate results
-                    if (totalPoints === 0) {
-                        debugLog(
-                            "Calculation failed - no points generated",
-                            "error"
+                            `WebAssembly function failed: ${wasmError.message}`
                         );
                         Module._free(outputArrayPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus(
-                            "error",
-                            "Calculation failed - no points generated"
-                        );
-                        document.getElementById("resultsContainer").innerHTML =
-                            '<div class="no-results">Calculation failed. Check debug log for details.</div>';
+                        showLoading(false);
                         return;
                     }
 
-                    if (totalPoints > 50000) {
-                        debugLog(
-                            `Too many points for processing: ${totalPoints}`,
-                            "error"
+                    // Step 4: Read total points from memory
+                    const actualPoints = Module.HEAP32[totalPointsPtr / 4];
+
+                    if (
+                        actualPoints <= 0 ||
+                        actualPoints > expectedPoints * 2
+                    ) {
+                        updateStatus(
+                            "error",
+                            `Invalid point count returned: ${actualPoints}`
                         );
                         Module._free(outputArrayPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus(
-                            "error",
-                            `Too many points: ${totalPoints}. Use smaller coordinates.`
-                        );
+                        showLoading(false);
                         return;
                     }
 
-                    // Step 6: Read the points array from WebAssembly memory
-                    debugLog(
-                        "Step 6: Reading points array from WebAssembly memory"
-                    );
+                    // Step 5: Read points from memory
                     const points = [];
+                    const floatView = new Float32Array(
+                        Module.HEAPF32.buffer,
+                        outputArrayPtr,
+                        actualPoints * 2
+                    );
 
-                    for (let i = 0; i < totalPoints; i++) {
-                        const xOffset = outputArrayPtr + i * 2 * 4; // x coordinate offset
-                        const yOffset = outputArrayPtr + i * 2 * 4 + 4; // y coordinate offset
-
-                        const x = Module.getValue(xOffset, "float");
-                        const y = Module.getValue(yOffset, "float");
-
-                        if (!isFinite(x) || !isFinite(y)) {
-                            debugLog(
-                                `Invalid coordinates at point ${i}: (${x}, ${y})`,
-                                "error"
-                            );
-                            continue;
-                        }
-
+                    for (let i = 0; i < actualPoints; i++) {
+                        const x = floatView[i * 2];
+                        const y = floatView[i * 2 + 1];
                         points.push({ x: x, y: y });
                     }
 
-                    debugLog(
-                        `Successfully read ${points.length} points from array`
-                    );
+                    // Clean up memory
+                    Module._free(outputArrayPtr);
+                    Module._free(totalPointsPtr);
 
-                    if (points.length === 0) {
-                        debugLog("No valid points read from array", "error");
-                        Module._free(outputArrayPtr);
-                        Module._free(totalPointsPtr);
-                        updateStatus(
-                            "error",
-                            "No valid points in calculation result"
+                    // Calculate slope for display
+                    let slope = "undefined";
+                    try {
+                        const calculatedSlope = Module._calculate_slope(
+                            x1,
+                            y1,
+                            x2,
+                            y2
                         );
-                        return;
-                    }
-
-                    // Step 7: Calculate line properties
-                    debugLog("Step 7: Calculating line properties");
-                    const dx = x2 - x1;
-                    const dy = y2 - y1;
-                    const length = Math.sqrt(dx * dx + dy * dy).toFixed(2);
-
-                    // Calculate slope safely
-                    let slope;
-                    if (
-                        Module._calculate_slope &&
-                        typeof Module._calculate_slope === "function"
-                    ) {
-                        try {
-                            const slopeValue = Module._calculate_slope(
-                                x1,
-                                y1,
-                                x2,
-                                y2
-                            );
-                            if (Math.abs(slopeValue) > 999998.0) {
-                                slope = "∞ (Vertical line)";
-                            } else {
-                                slope = slopeValue.toFixed(6);
-                            }
-                        } catch (slopeError) {
-                            debugLog(
-                                `Slope calculation error: ${slopeError.message}`,
-                                "warn"
-                            );
-                            slope =
-                                dx === 0
-                                    ? "∞ (Vertical line)"
-                                    : (dy / dx).toFixed(6);
+                        if (isFinite(calculatedSlope)) {
+                            slope = calculatedSlope.toFixed(3);
                         }
-                    } else {
-                        debugLog(
-                            "Slope function not available, calculating manually",
-                            "warn"
-                        );
-                        slope =
-                            dx === 0
-                                ? "∞ (Vertical line)"
-                                : (dy / dx).toFixed(6);
+                    } catch (e) {
+                        slope = "N/A";
                     }
 
-                    debugLog(
-                        `Line properties: length=${length}, slope=${slope}`
+                    // Display results
+                    displayResults(points, x1, y1, x2, y2, slope);
+                    updateStatus(
+                        "success",
+                        `✅ Successfully calculated ${points.length} DDA points`
                     );
+                } catch (error) {
+                    updateStatus(
+                        "error",
+                        `Calculation failed: ${error.message}`
+                    );
+                } finally {
+                    showLoading(false);
+                }
+            }
 
-                    // Step 8: Update UI with results
-                    debugLog("Step 8: Updating UI with results");
-                    document.getElementById(
-                        "summaryTitle"
-                    ).textContent = `Line from (${x1}, ${y1}) to (${x2}, ${y2})`;
-                    document.getElementById("totalPoints").textContent =
-                        points.length;
-                    document.getElementById("lineLength").textContent = length;
-                    document.getElementById("lineSlope").textContent = slope;
-                    document.getElementById("summaryCard").style.display =
-                        "block";
+            function displayResults(points, x1, y1, x2, y2, slope) {
+                // Update summary card
+                const summaryCard = document.getElementById("summaryCard");
+                document.getElementById("totalPoints").textContent =
+                    points.length;
 
-                    // Step 9: Build results table
-                    debugLog("Step 9: Building results table");
-                    let tableHTML = `
+                const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                document.getElementById("lineLength").textContent =
+                    distance.toFixed(2);
+                document.getElementById("lineSlope").textContent = slope;
+
+                summaryCard.style.display = "block";
+
+                // Create results table
+                let html = `
+                    <div class="results-container">
+                        <h3>📍 DDA Points (${points.length} total)</h3>
                         <table class="results-table">
                             <thead>
                                 <tr>
@@ -1141,75 +764,41 @@
                                     <th>Current Y</th>
                                     <th>Next X</th>
                                     <th>Next Y</th>
-                                    <th>Rounded Coordinates</th>
+                                    <th>Rounded-Coordinates</th>
                                 </tr>
                             </thead>
                             <tbody>
+                `;
+
+                points.forEach((point, index) => {
+                    const nextPoint =
+                        index < points.length - 1 ? points[index + 1] : point;
+                    const roundedCoords = `(${Math.round(
+                        point.x
+                    )}, ${Math.round(point.y)})`;
+
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${point.x.toFixed(3)}</td>
+                            <td>${point.y.toFixed(3)}</td>
+                            <td>${nextPoint.x.toFixed(3)}</td>
+                            <td>${nextPoint.y.toFixed(3)}</td>
+                            <td>${roundedCoords}</td>
+                        </tr>
                     `;
+                });
 
-                    for (let i = 0; i < points.length; i++) {
-                        const currentPoint = points[i];
-                        const nextPoint =
-                            i < points.length - 1 ? points[i + 1] : null;
-
-                        const nextX = nextPoint ? nextPoint.x.toFixed(2) : "—";
-                        const nextY = nextPoint ? nextPoint.y.toFixed(2) : "—";
-                        const roundedCoords = `(${Math.round(
-                            currentPoint.x
-                        )}, ${Math.round(currentPoint.y)})`;
-
-                        tableHTML += `
-                            <tr>
-                                <td data-label="Step">${i}</td>
-                                <td data-label="Current X">${currentPoint.x.toFixed(
-                                    2
-                                )}</td>
-                                <td data-label="Current Y">${currentPoint.y.toFixed(
-                                    2
-                                )}</td>
-                                <td data-label="Next X">${nextX}</td>
-                                <td data-label="Next Y">${nextY}</td>
-                                <td data-label="Rounded Coordinates">${roundedCoords}</td>
-                            </tr>
-                        `;
-                    }
-
-                    tableHTML += `
+                html += `
                             </tbody>
                         </table>
-                    `;
+                    </div>
+                `;
 
-                    // Update results container
-                    document.getElementById("resultsContainer").innerHTML =
-                        tableHTML;
-
-                    updateStatus(
-                        "ready",
-                        `Successfully calculated ${points.length} points`
-                    );
-
-                    // Step 10: Cleanup memory
-                    debugLog("Step 10: Cleaning up allocated memory");
-                    Module._free(outputArrayPtr);
-                    Module._free(totalPointsPtr);
-
-                    debugLog("=== DDA Calculation Completed Successfully ===");
-                } catch (error) {
-                    debugLog(
-                        `Fatal error during calculation: ${error.message}`,
-                        "error"
-                    );
-                    debugLog(`Stack trace: ${error.stack}`, "error");
-                    updateStatus("error", "Error: " + error.message);
-                    document.getElementById("resultsContainer").innerHTML =
-                        '<div class="no-results">An error occurred during calculation. Check debug log for details.</div>';
-                } finally {
-                    showLoading(false);
-                }
+                document.getElementById("resultsContainer").innerHTML = html;
             }
 
             function clearResults() {
-                debugLog("Clearing results and resetting UI");
                 document.getElementById("resultsContainer").innerHTML =
                     '<div class="no-results">Enter coordinates and click "Calculate DDA Points" to see the line drawing algorithm in action.</div>';
                 document.getElementById("summaryCard").style.display = "none";
@@ -1219,61 +808,22 @@
                 );
             }
 
-            // Force reload function to bypass cache
-            function forceReload() {
-                console.log("🔄 Forcing reload with cache bypass...");
-                updateStatus("Forcing WebAssembly module reload...", "info");
-
-                // Clear all cache-related variables
-                window.Module = undefined;
-
-                // Reload page with cache bypass
-                window.location.reload(true);
-            }
-
-            // Enhanced event listeners with debug logging
+            // Enhanced event listeners
             document.addEventListener("DOMContentLoaded", function () {
-                debugLog("DOM loaded, setting up event listeners");
-
                 const inputs = document.querySelectorAll(
                     'input[type="number"]'
                 );
-                debugLog(`Found ${inputs.length} number inputs`);
-
                 inputs.forEach((input) => {
+                    input.addEventListener("input", function () {
+                        validateInput(this.id, parseInt(this.value));
+                    });
+
                     input.addEventListener("keypress", function (e) {
                         if (e.key === "Enter") {
-                            debugLog(`Enter key pressed on ${input.id}`);
                             calculateDDA();
                         }
                     });
-
-                    input.addEventListener("input", function (e) {
-                        const value = parseInt(e.target.value);
-                        debugLog(`Input changed: ${e.target.id} = ${value}`);
-                        validateInput(e.target.id, value);
-                    });
-
-                    input.addEventListener("blur", function (e) {
-                        const value = parseInt(e.target.value);
-                        debugLog(`Input focus lost: ${e.target.id} = ${value}`);
-                        validateInput(e.target.id, value);
-                    });
                 });
-
-                debugLog("Event listeners setup complete");
-            });
-
-            // Global error handler
-            window.addEventListener("error", function (e) {
-                debugLog(
-                    `Global error: ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`,
-                    "error"
-                );
-            });
-
-            window.addEventListener("unhandledrejection", function (e) {
-                debugLog(`Unhandled promise rejection: ${e.reason}`, "error");
             });
         </script>
     </body>

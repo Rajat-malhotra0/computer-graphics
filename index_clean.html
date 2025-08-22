@@ -49,7 +49,7 @@
 
             .main-content {
                 display: grid;
-                grid-template-columns: 1fr 3fr;
+                grid-template-columns: 1fr 1fr;
                 gap: 30px;
                 padding: 30px;
             }
@@ -310,7 +310,7 @@
             .results-table th,
             .results-table td {
                 padding: 8px 12px;
-                text-align: center;
+                text-align: left;
                 border-bottom: 1px solid #e9ecef;
             }
 
@@ -419,11 +419,15 @@
                         <h3>📈 Line Analysis</h3>
                         <div class="summary-stats">
                             <div class="stat-item">
-                                <span class="stat-value" id="totalPoints">0</span>
+                                <span class="stat-value" id="totalPoints"
+                                    >0</span
+                                >
                                 <span class="stat-label">Total Points</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="lineLength">0</span>
+                                <span class="stat-value" id="lineLength"
+                                    >0</span
+                                >
                                 <span class="stat-label">Length</span>
                             </div>
                             <div class="stat-item">
@@ -671,7 +675,10 @@
                     // Step 4: Read total points from memory
                     const actualPoints = Module.HEAP32[totalPointsPtr / 4];
 
-                    if (actualPoints <= 0 || actualPoints > expectedPoints * 2) {
+                    if (
+                        actualPoints <= 0 ||
+                        actualPoints > expectedPoints * 2
+                    ) {
                         updateStatus(
                             "error",
                             `Invalid point count returned: ${actualPoints}`
@@ -718,10 +725,15 @@
 
                     // Display results
                     displayResults(points, x1, y1, x2, y2, slope);
-                    updateStatus("success", `✅ Successfully calculated ${points.length} DDA points`);
-
+                    updateStatus(
+                        "success",
+                        `✅ Successfully calculated ${points.length} DDA points`
+                    );
                 } catch (error) {
-                    updateStatus("error", `Calculation failed: ${error.message}`);
+                    updateStatus(
+                        "error",
+                        `Calculation failed: ${error.message}`
+                    );
                 } finally {
                     showLoading(false);
                 }
@@ -730,12 +742,14 @@
             function displayResults(points, x1, y1, x2, y2, slope) {
                 // Update summary card
                 const summaryCard = document.getElementById("summaryCard");
-                document.getElementById("totalPoints").textContent = points.length;
-                
+                document.getElementById("totalPoints").textContent =
+                    points.length;
+
                 const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-                document.getElementById("lineLength").textContent = distance.toFixed(2);
+                document.getElementById("lineLength").textContent =
+                    distance.toFixed(2);
                 document.getElementById("lineSlope").textContent = slope;
-                
+
                 summaryCard.style.display = "block";
 
                 // Create results table
@@ -746,28 +760,23 @@
                             <thead>
                                 <tr>
                                     <th>Step</th>
-                                    <th>Current X</th>
-                                    <th>Current Y</th>
-                                    <th>Next X</th>
-                                    <th>Next Y</th>
-                                    <th>Rounded-Coordinates</th>
+                                    <th>X</th>
+                                    <th>Y</th>
+                                    <th>Rounded X</th>
+                                    <th>Rounded Y</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
 
                 points.forEach((point, index) => {
-                    const nextPoint = index < points.length - 1 ? points[index + 1] : point;
-                    const roundedCoords = `(${Math.round(point.x)}, ${Math.round(point.y)})`;
-                    
                     html += `
                         <tr>
                             <td>${index + 1}</td>
                             <td>${point.x.toFixed(3)}</td>
                             <td>${point.y.toFixed(3)}</td>
-                            <td>${nextPoint.x.toFixed(3)}</td>
-                            <td>${nextPoint.y.toFixed(3)}</td>
-                            <td>${roundedCoords}</td>
+                            <td>${Math.round(point.x)}</td>
+                            <td>${Math.round(point.y)}</td>
                         </tr>
                     `;
                 });
