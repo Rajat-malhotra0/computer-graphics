@@ -216,16 +216,27 @@
                 }
             }
 
+            .results-section {
+                display: flex;
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .results-section > * {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
             .status-indicator {
                 padding: 1rem 1.5rem;
                 border-radius: 4px;
                 font-weight: 500;
                 text-align: center;
-                margin-bottom: 2rem;
                 transition: all 0.3s ease;
                 border: 1px solid var(--border-color);
                 background: #f9f9f9;
             }
+
             .status-ready {
                 color: #333;
             }
@@ -243,10 +254,10 @@
                 border: 1px solid var(--border-color);
                 border-radius: 4px;
                 padding: 1.5rem;
-                margin-bottom: 2rem;
             }
 
-            .summary-card h3 {
+            .summary-card h3,
+            #results-output h3 {
                 font-family: var(--header-font);
                 font-size: 1.3rem;
                 margin-bottom: 1.5rem;
@@ -255,7 +266,7 @@
 
             .summary-stats {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
                 gap: 1.5rem;
                 text-align: left;
             }
@@ -276,9 +287,64 @@
             .stat-label {
                 font-size: 0.9rem;
                 color: var(--light-text);
-                font-style: normal;
             }
 
+            .results-table-container {
+                max-height: 550px;
+                overflow-y: auto;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                background: var(--container-bg);
+            }
+
+            .results-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 14px 18px;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+                white-space: nowrap;
+            }
+
+            .results-table th {
+                background: #f9f9f9;
+                font-weight: 600;
+                color: var(--secondary-color);
+                position: sticky;
+                top: 0;
+                z-index: 1;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .results-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .results-table tr:hover {
+                background: #f5f5f5;
+            }
+
+            .results-table td:first-child {
+                font-weight: 600;
+                color: var(--secondary-color);
+            }
+
+            .no-results {
+                text-align: center;
+                color: #6c757d;
+                padding: 60px 20px;
+                background: #fcfcfc;
+                border-radius: 4px;
+                border: 1px solid var(--border-color);
+            }
+
+            /* --- Responsive Design --- */
             @media (max-width: 1200px) {
                 .main-content {
                     grid-template-columns: 30% 1fr;
@@ -312,6 +378,7 @@
                     font-size: 2rem;
                 }
             }
+
             @media (max-width: 576px) {
                 body {
                     padding: 0;
@@ -329,71 +396,6 @@
                 .input-group {
                     grid-template-columns: 1fr;
                 }
-            }
-
-            .results-section h3 {
-                font-family: var(--header-font);
-                font-size: 1.3rem;
-                margin-bottom: 1.5rem;
-                font-weight: 600;
-            }
-
-            .results-container {
-                max-height: 550px;
-                overflow-y: auto;
-                border: 1px solid var(--border-color);
-                border-radius: 4px;
-                padding: 0;
-                background: var(--container-bg);
-            }
-
-            .results-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 0;
-            }
-
-            .results-table th,
-            .results-table td {
-                padding: 14px 18px;
-                text-align: left;
-                border-bottom: 1px solid var(--border-color);
-                white-space: nowrap;
-            }
-
-            .results-table th {
-                background: #f9f9f9;
-                font-weight: 600;
-                color: var(--secondary-color);
-                position: sticky;
-                top: 0;
-                z-index: 1;
-                font-size: 0.85rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-            }
-
-            .results-table tr:last-child td {
-                border-bottom: none;
-            }
-
-            .results-table tr:hover {
-                background: #f5f5f5;
-            }
-
-            .results-table td:nth-child(1) {
-                font-weight: 600;
-                color: var(--secondary-color);
-            }
-
-            .no-results {
-                text-align: center;
-                color: #6c757d;
-                font-style: normal;
-                padding: 60px 20px;
-                background: #fcfcfc;
-                border-radius: 4px;
-                border: 1px solid var(--border-color);
             }
         </style>
     </head>
@@ -497,7 +499,7 @@
                         </div>
                     </div>
 
-                    <div id="resultsContainer">
+                    <div id="results-output">
                         <div class="no-results">
                             Enter coordinates and click "Calculate DDA Points"
                             to see the algorithm output.
@@ -543,10 +545,9 @@
             const cacheBuster = Date.now();
             const script = document.createElement("script");
             script.src = `dda.js?v=${cacheBuster}`;
-            script.onload = function () {
+            script.onload = () =>
                 console.log("WebAssembly script loaded with cache buster");
-            };
-            script.onerror = function () {
+            script.onerror = () => {
                 console.error(
                     "Failed to load WebAssembly script, falling back to cached version"
                 );
@@ -580,11 +581,10 @@
                     input.classList.add("error");
                     errorElement.classList.add("show");
                     return false;
-                } else {
-                    input.classList.remove("error");
-                    errorElement.classList.remove("show");
-                    return true;
                 }
+                input.classList.remove("error");
+                errorElement.classList.remove("show");
+                return true;
             }
 
             function validateAllInputs() {
@@ -614,15 +614,12 @@
                         errorElement.classList.add("show");
                     });
                     return false;
-                } else {
-                    ["x1", "y1", "x2", "y2"].forEach((id) => {
-                        const errorElement = document.getElementById(
-                            id + "-error"
-                        );
-                        errorElement.textContent =
-                            "Value must be between -5000 and 5000";
-                    });
                 }
+                ["x1", "y1", "x2", "y2"].forEach((id) => {
+                    const errorElement = document.getElementById(id + "-error");
+                    errorElement.textContent =
+                        "Value must be between -5000 and 5000";
+                });
 
                 return isX1Valid && isY1Valid && isX2Valid && isY2Valid;
             }
@@ -663,14 +660,14 @@
                     const deltaY = Math.abs(y2 - y1);
                     const expectedPoints = Math.max(deltaX, deltaY) + 1;
 
-                    const arrayBytes = expectedPoints * 2 * 4; // 2 floats per point, 4 bytes per float
+                    const arrayBytes = expectedPoints * 2 * 4;
                     outputArrayPtr = Module._malloc(arrayBytes);
                     if (!outputArrayPtr)
                         throw new Error(
                             "Failed to allocate memory for output array"
                         );
 
-                    totalPointsPtr = Module._malloc(4); // 4 bytes for one integer
+                    totalPointsPtr = Module._malloc(4);
                     if (!totalPointsPtr)
                         throw new Error(
                             "Failed to allocate memory for point counter"
@@ -684,12 +681,11 @@
                         outputArrayPtr,
                         totalPointsPtr
                     );
-
                     const actualPoints = Module.HEAP32[totalPointsPtr / 4];
 
                     if (actualPoints <= 0 || actualPoints > expectedPoints) {
                         throw new Error(
-                            `Invalid point count returned: ${actualPoints}`
+                            `Invalid point count returned from Wasm: ${actualPoints}`
                         );
                     }
 
@@ -699,7 +695,6 @@
                         outputArrayPtr,
                         actualPoints * 2
                     );
-
                     for (let i = 0; i < actualPoints; i++) {
                         points.push({
                             x: floatView[i * 2],
@@ -741,30 +736,29 @@
                 const summaryCard = document.getElementById("summaryCard");
                 document.getElementById("totalPoints").textContent =
                     points.length;
-
                 const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
                 document.getElementById("lineLength").textContent =
                     distance.toFixed(2);
                 document.getElementById("lineSlope").textContent = slope;
-
                 summaryCard.style.display = "block";
 
+                const resultsOutput = document.getElementById("results-output");
                 let html = `
-                <div class="results-container">
                     <h3>Algorithm Output (${points.length} points)</h3>
-                    <table class="results-table">
-                        <thead>
-                            <tr>
-                                <th>Step</th>
-                                <th>Current X</th>
-                                <th>Current Y</th>
-                                <th>Next X</th>
-                                <th>Next Y</th>
-                                <th>Plot Coordinate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Step</th>
+                                    <th>Current X</th>
+                                    <th>Current Y</th>
+                                    <th>Next X</th>
+                                    <th>Next Y</th>
+                                    <th>Plot Coordinate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
 
                 points.forEach((point, index) => {
                     const nextPoint =
@@ -772,7 +766,6 @@
                     const roundedCoords = `(${Math.round(
                         point.x
                     )}, ${Math.round(point.y)})`;
-
                     html += `
                         <tr>
                             <td>${index + 1}</td>
@@ -786,16 +779,15 @@
                 });
 
                 html += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-                document.getElementById("resultsContainer").innerHTML = html;
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                resultsOutput.innerHTML = html;
             }
 
             function clearResults() {
-                document.getElementById("resultsContainer").innerHTML =
+                document.getElementById("results-output").innerHTML =
                     '<div class="no-results">Enter coordinates and click "Calculate DDA Points" to see the algorithm output.</div>';
                 document.getElementById("summaryCard").style.display = "none";
                 updateStatus(
@@ -812,7 +804,6 @@
                     input.addEventListener("input", function () {
                         validateInput(this.id, parseInt(this.value));
                     });
-
                     input.addEventListener("keypress", function (e) {
                         if (e.key === "Enter") {
                             e.preventDefault();
