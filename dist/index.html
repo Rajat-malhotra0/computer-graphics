@@ -631,11 +631,24 @@
             var Module = {
                 onRuntimeInitialized: function () {
                     debugLog("WebAssembly runtime initialized successfully");
-                    debugLog(
-                        `Available Module functions: ${Object.keys(Module)
-                            .filter((key) => key.startsWith("_"))
-                            .join(", ")}`
-                    );
+                    
+                    // List ALL available functions for debugging
+                    const allFunctions = Object.keys(Module).filter((key) => key.startsWith("_"));
+                    debugLog(`Available Module functions: ${allFunctions.join(", ")}`);
+                    
+                    // Specifically check for the functions we need
+                    debugLog("Function availability check:");
+                    debugLog(`_get_dda_points_array: ${typeof Module._get_dda_points_array}`);
+                    debugLog(`_calculate_slope: ${typeof Module._calculate_slope}`);
+                    debugLog(`_get_point_size: ${typeof Module._get_point_size}`);
+                    debugLog(`_test_memory_allocation: ${typeof Module._test_memory_allocation}`);
+                    debugLog(`_malloc: ${typeof Module._malloc}`);
+                    debugLog(`_free: ${typeof Module._free}`);
+                    
+                    // Legacy function check
+                    if (Module._calculate_dda) {
+                        debugLog("WARNING: Legacy _calculate_dda function still present");
+                    }
 
                     // Log memory information
                     if (Module.HEAPF32) {
@@ -777,9 +790,12 @@
             function calculateDDA() {
                 debugLog("=== Starting DDA Calculation (Array Method) ===");
 
-                // Check if WebAssembly module is ready
-                if (!Module._get_dda_points_array) {
-                    debugLog("WebAssembly module not ready", "error");
+                // Check if WebAssembly module is ready with fallback support
+                const hasNewFunction = Module._get_dda_points_array && typeof Module._get_dda_points_array === 'function';
+                const hasOldFunction = Module._calculate_dda && typeof Module._calculate_dda === 'function';
+                
+                if (!hasNewFunction && !hasOldFunction) {
+                    debugLog("WebAssembly module not ready - no DDA functions available", "error");
                     updateStatus(
                         "error",
                         "WebAssembly module not loaded yet. Please wait..."
@@ -787,10 +803,16 @@
                     return;
                 }
 
-                debugLog("WebAssembly module is ready");
+                if (!hasNewFunction && hasOldFunction) {
+                    debugLog("WARNING: Using legacy _calculate_dda function. Please refresh to get updated version.", "warn");
+                    updateStatus("error", "Please refresh the page to load the updated WebAssembly module");
+                    return;
+                }
+
+                debugLog("WebAssembly module is ready with new array function");
 
                 // Enhanced function availability check
-                debugLog("Checking WebAssembly function availability:");
+                debugLog("Final function availability check:");
                 debugLog(`_get_dda_points_array: ${typeof Module._get_dda_points_array}`);
                 debugLog(`_calculate_slope: ${typeof Module._calculate_slope}`);
                 debugLog(`_malloc: ${typeof Module._malloc}`);

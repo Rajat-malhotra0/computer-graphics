@@ -346,27 +346,31 @@ void get_dda_points_array(int x1, int y1, int x2, int y2, float *output_array, i
     // Get points using existing DDA function
     point *result = dda(x1, y1, x2, y2, total_points);
 
-    if (result && *total_points > 0) {
+    if (result && *total_points > 0)
+    {
 #ifdef __EMSCRIPTEN__
         printf("WASM Debug: Copying %d points to output array\n", *total_points);
 #endif
-        
+
         // Copy points to output array (x, y, x, y, ...)
-        for (int i = 0; i < *total_points; i++) {
-            output_array[i * 2] = result[i].x;      // x coordinate
-            output_array[i * 2 + 1] = result[i].y;  // y coordinate
+        for (int i = 0; i < *total_points; i++)
+        {
+            output_array[i * 2] = result[i].x;     // x coordinate
+            output_array[i * 2 + 1] = result[i].y; // y coordinate
         }
-        
+
         // Free the temporary points array
         free(result);
-        
+
 #ifdef __EMSCRIPTEN__
         printf("WASM Debug: Successfully copied points to array\n");
         printf("WASM Debug: First point: (%.2f, %.2f)\n", output_array[0], output_array[1]);
-        printf("WASM Debug: Last point: (%.2f, %.2f)\n", 
+        printf("WASM Debug: Last point: (%.2f, %.2f)\n",
                output_array[(*total_points - 1) * 2], output_array[(*total_points - 1) * 2 + 1]);
 #endif
-    } else {
+    }
+    else
+    {
 #ifdef __EMSCRIPTEN__
         printf("WASM Debug: DDA calculation failed\n");
 #endif
