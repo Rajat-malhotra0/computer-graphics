@@ -544,6 +544,13 @@
                         >
                             Clear Results
                         </button>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="forceReload()"
+                            title="Force reload WebAssembly module"
+                        >
+                            🔄 Force Reload
+                        </button>
                     </div>
 
                     <div class="loading-spinner" id="loadingSpinner"></div>
@@ -629,25 +636,46 @@
             }
 
             var Module = {
+                locateFile: function (path) {
+                    // Add cache-busting to WASM file
+                    if (path.endsWith(".wasm")) {
+                        return path + "?v=" + Date.now();
+                    }
+                    return path;
+                },
                 onRuntimeInitialized: function () {
                     debugLog("WebAssembly runtime initialized successfully");
-                    
+
                     // List ALL available functions for debugging
-                    const allFunctions = Object.keys(Module).filter((key) => key.startsWith("_"));
-                    debugLog(`Available Module functions: ${allFunctions.join(", ")}`);
-                    
+                    const allFunctions = Object.keys(Module).filter((key) =>
+                        key.startsWith("_")
+                    );
+                    debugLog(
+                        `Available Module functions: ${allFunctions.join(", ")}`
+                    );
+
                     // Specifically check for the functions we need
                     debugLog("Function availability check:");
-                    debugLog(`_get_dda_points_array: ${typeof Module._get_dda_points_array}`);
-                    debugLog(`_calculate_slope: ${typeof Module._calculate_slope}`);
-                    debugLog(`_get_point_size: ${typeof Module._get_point_size}`);
-                    debugLog(`_test_memory_allocation: ${typeof Module._test_memory_allocation}`);
+                    debugLog(
+                        `_get_dda_points_array: ${typeof Module._get_dda_points_array}`
+                    );
+                    debugLog(
+                        `_calculate_slope: ${typeof Module._calculate_slope}`
+                    );
+                    debugLog(
+                        `_get_point_size: ${typeof Module._get_point_size}`
+                    );
+                    debugLog(
+                        `_test_memory_allocation: ${typeof Module._test_memory_allocation}`
+                    );
                     debugLog(`_malloc: ${typeof Module._malloc}`);
                     debugLog(`_free: ${typeof Module._free}`);
-                    
+
                     // Legacy function check
                     if (Module._calculate_dda) {
-                        debugLog("WARNING: Legacy _calculate_dda function still present");
+                        debugLog(
+                            "WARNING: Legacy _calculate_dda function still present"
+                        );
                     }
 
                     // Log memory information
@@ -664,10 +692,21 @@
                         );
                     }
 
-                    updateStatus(
-                        "ready",
-                        "WebAssembly module loaded successfully!"
-                    );
+                    // Check if we have the new functions
+                    if (
+                        Module._get_dda_points_array &&
+                        typeof Module._get_dda_points_array === "function"
+                    ) {
+                        updateStatus(
+                            "ready",
+                            "✅ Latest WebAssembly module loaded successfully!"
+                        );
+                    } else {
+                        updateStatus(
+                            "error",
+                            "❌ Old cached module detected. Try hard refresh (Ctrl+F5)"
+                        );
+                    }
                 },
                 onAbort: function (what) {
                     debugLog(`WebAssembly aborted: ${what}`, "error");
@@ -688,7 +727,25 @@
             // Initialize debug logging
             debugLog("Page loaded, initializing...");
         </script>
-        <script src="dda.js"></script>
+        <script>
+            // Add cache-busting parameter to force fresh load
+            const cacheBuster = Date.now();
+            const script = document.createElement("script");
+            script.src = `dda.js?v=${cacheBuster}`;
+            script.onload = function () {
+                console.log("WebAssembly script loaded with cache buster");
+            };
+            script.onerror = function () {
+                console.error(
+                    "Failed to load WebAssembly script, falling back to cached version"
+                );
+                // Fallback to regular script load
+                const fallbackScript = document.createElement("script");
+                fallbackScript.src = "dda.js";
+                document.head.appendChild(fallbackScript);
+            };
+            document.head.appendChild(script);
+        </script>
         <script>
             function updateStatus(type, message) {
                 debugLog(`Status update: ${type} - ${message}`);
@@ -791,11 +848,18 @@
                 debugLog("=== Starting DDA Calculation (Array Method) ===");
 
                 // Check if WebAssembly module is ready with fallback support
-                const hasNewFunction = Module._get_dda_points_array && typeof Module._get_dda_points_array === 'function';
-                const hasOldFunction = Module._calculate_dda && typeof Module._calculate_dda === 'function';
-                
+                const hasNewFunction =
+                    Module._get_dda_points_array &&
+                    typeof Module._get_dda_points_array === "function";
+                const hasOldFunction =
+                    Module._calculate_dda &&
+                    typeof Module._calculate_dda === "function";
+
                 if (!hasNewFunction && !hasOldFunction) {
-                    debugLog("WebAssembly module not ready - no DDA functions available", "error");
+                    debugLog(
+                        "WebAssembly module not ready - no DDA functions available",
+                        "error"
+                    );
                     updateStatus(
                         "error",
                         "WebAssembly module not loaded yet. Please wait..."
@@ -804,8 +868,14 @@
                 }
 
                 if (!hasNewFunction && hasOldFunction) {
-                    debugLog("WARNING: Using legacy _calculate_dda function. Please refresh to get updated version.", "warn");
-                    updateStatus("error", "Please refresh the page to load the updated WebAssembly module");
+                    debugLog(
+                        "WARNING: Using legacy _calculate_dda function. Please refresh to get updated version.",
+                        "warn"
+                    );
+                    updateStatus(
+                        "error",
+                        "Please refresh the page to load the updated WebAssembly module"
+                    );
                     return;
                 }
 
@@ -813,7 +883,9 @@
 
                 // Enhanced function availability check
                 debugLog("Final function availability check:");
-                debugLog(`_get_dda_points_array: ${typeof Module._get_dda_points_array}`);
+                debugLog(
+                    `_get_dda_points_array: ${typeof Module._get_dda_points_array}`
+                );
                 debugLog(`_calculate_slope: ${typeof Module._calculate_slope}`);
                 debugLog(`_malloc: ${typeof Module._malloc}`);
                 debugLog(`_free: ${typeof Module._free}`);
@@ -845,32 +917,48 @@
                     const deltaX = Math.abs(x2 - x1);
                     const deltaY = Math.abs(y2 - y1);
                     const expectedPoints = Math.max(deltaX, deltaY) + 1;
-                    
+
                     debugLog(`Expected points: ${expectedPoints}`);
 
                     // Step 1: Allocate memory for output array (2 floats per point: x, y)
                     const arraySize = expectedPoints * 2; // x, y for each point
                     const arrayBytes = arraySize * 4; // 4 bytes per float
-                    
-                    debugLog(`Step 1: Allocating array for ${arraySize} floats (${arrayBytes} bytes)`);
+
+                    debugLog(
+                        `Step 1: Allocating array for ${arraySize} floats (${arrayBytes} bytes)`
+                    );
                     const outputArrayPtr = Module._malloc(arrayBytes);
-                    
+
                     if (!outputArrayPtr || outputArrayPtr === 0) {
-                        debugLog(`Array allocation failed: ${outputArrayPtr}`, "error");
-                        updateStatus("error", "Failed to allocate memory for output array");
+                        debugLog(
+                            `Array allocation failed: ${outputArrayPtr}`,
+                            "error"
+                        );
+                        updateStatus(
+                            "error",
+                            "Failed to allocate memory for output array"
+                        );
                         return;
                     }
-                    
+
                     debugLog(`Output array allocated at: ${outputArrayPtr}`);
 
                     // Step 2: Allocate memory for total points counter
-                    debugLog("Step 2: Allocating memory for total points counter");
+                    debugLog(
+                        "Step 2: Allocating memory for total points counter"
+                    );
                     const totalPointsPtr = Module._malloc(4);
 
                     if (!totalPointsPtr || totalPointsPtr === 0) {
-                        debugLog(`Counter allocation failed: ${totalPointsPtr}`, "error");
+                        debugLog(
+                            `Counter allocation failed: ${totalPointsPtr}`,
+                            "error"
+                        );
                         Module._free(outputArrayPtr);
-                        updateStatus("error", "Failed to allocate memory for counter");
+                        updateStatus(
+                            "error",
+                            "Failed to allocate memory for counter"
+                        );
                         return;
                     }
 
@@ -878,16 +966,31 @@
 
                     // Step 3: Call the new array-based DDA function
                     debugLog("Step 3: Calling array-based DDA function");
-                    
+
                     try {
-                        Module._get_dda_points_array(x1, y1, x2, y2, outputArrayPtr, totalPointsPtr);
-                        debugLog("DDA array function call completed successfully");
+                        Module._get_dda_points_array(
+                            x1,
+                            y1,
+                            x2,
+                            y2,
+                            outputArrayPtr,
+                            totalPointsPtr
+                        );
+                        debugLog(
+                            "DDA array function call completed successfully"
+                        );
                     } catch (wasmError) {
-                        debugLog(`WebAssembly function call failed: ${wasmError.message}`, "error");
+                        debugLog(
+                            `WebAssembly function call failed: ${wasmError.message}`,
+                            "error"
+                        );
                         debugLog(`Error type: ${wasmError.name}`, "error");
                         Module._free(outputArrayPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus("error", `WebAssembly call failed: ${wasmError.message}`);
+                        updateStatus(
+                            "error",
+                            `WebAssembly call failed: ${wasmError.message}`
+                        );
                         return;
                     }
 
@@ -898,49 +1001,71 @@
 
                     // Step 5: Validate results
                     if (totalPoints === 0) {
-                        debugLog("Calculation failed - no points generated", "error");
+                        debugLog(
+                            "Calculation failed - no points generated",
+                            "error"
+                        );
                         Module._free(outputArrayPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus("error", "Calculation failed - no points generated");
+                        updateStatus(
+                            "error",
+                            "Calculation failed - no points generated"
+                        );
                         document.getElementById("resultsContainer").innerHTML =
                             '<div class="no-results">Calculation failed. Check debug log for details.</div>';
                         return;
                     }
 
                     if (totalPoints > 50000) {
-                        debugLog(`Too many points for processing: ${totalPoints}`, "error");
+                        debugLog(
+                            `Too many points for processing: ${totalPoints}`,
+                            "error"
+                        );
                         Module._free(outputArrayPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus("error", `Too many points: ${totalPoints}. Use smaller coordinates.`);
+                        updateStatus(
+                            "error",
+                            `Too many points: ${totalPoints}. Use smaller coordinates.`
+                        );
                         return;
                     }
 
                     // Step 6: Read the points array from WebAssembly memory
-                    debugLog("Step 6: Reading points array from WebAssembly memory");
+                    debugLog(
+                        "Step 6: Reading points array from WebAssembly memory"
+                    );
                     const points = [];
-                    
+
                     for (let i = 0; i < totalPoints; i++) {
-                        const xOffset = outputArrayPtr + (i * 2 * 4);     // x coordinate offset
-                        const yOffset = outputArrayPtr + (i * 2 * 4) + 4; // y coordinate offset
-                        
+                        const xOffset = outputArrayPtr + i * 2 * 4; // x coordinate offset
+                        const yOffset = outputArrayPtr + i * 2 * 4 + 4; // y coordinate offset
+
                         const x = Module.getValue(xOffset, "float");
                         const y = Module.getValue(yOffset, "float");
-                        
+
                         if (!isFinite(x) || !isFinite(y)) {
-                            debugLog(`Invalid coordinates at point ${i}: (${x}, ${y})`, "error");
+                            debugLog(
+                                `Invalid coordinates at point ${i}: (${x}, ${y})`,
+                                "error"
+                            );
                             continue;
                         }
-                        
+
                         points.push({ x: x, y: y });
                     }
-                    
-                    debugLog(`Successfully read ${points.length} points from array`);
-                    
+
+                    debugLog(
+                        `Successfully read ${points.length} points from array`
+                    );
+
                     if (points.length === 0) {
                         debugLog("No valid points read from array", "error");
                         Module._free(outputArrayPtr);
                         Module._free(totalPointsPtr);
-                        updateStatus("error", "No valid points in calculation result");
+                        updateStatus(
+                            "error",
+                            "No valid points in calculation result"
+                        );
                         return;
                     }
 
@@ -952,32 +1077,58 @@
 
                     // Calculate slope safely
                     let slope;
-                    if (Module._calculate_slope && typeof Module._calculate_slope === 'function') {
+                    if (
+                        Module._calculate_slope &&
+                        typeof Module._calculate_slope === "function"
+                    ) {
                         try {
-                            const slopeValue = Module._calculate_slope(x1, y1, x2, y2);
+                            const slopeValue = Module._calculate_slope(
+                                x1,
+                                y1,
+                                x2,
+                                y2
+                            );
                             if (Math.abs(slopeValue) > 999998.0) {
                                 slope = "∞ (Vertical line)";
                             } else {
                                 slope = slopeValue.toFixed(6);
                             }
                         } catch (slopeError) {
-                            debugLog(`Slope calculation error: ${slopeError.message}`, "warn");
-                            slope = dx === 0 ? "∞ (Vertical line)" : (dy / dx).toFixed(6);
+                            debugLog(
+                                `Slope calculation error: ${slopeError.message}`,
+                                "warn"
+                            );
+                            slope =
+                                dx === 0
+                                    ? "∞ (Vertical line)"
+                                    : (dy / dx).toFixed(6);
                         }
                     } else {
-                        debugLog("Slope function not available, calculating manually", "warn");
-                        slope = dx === 0 ? "∞ (Vertical line)" : (dy / dx).toFixed(6);
+                        debugLog(
+                            "Slope function not available, calculating manually",
+                            "warn"
+                        );
+                        slope =
+                            dx === 0
+                                ? "∞ (Vertical line)"
+                                : (dy / dx).toFixed(6);
                     }
 
-                    debugLog(`Line properties: length=${length}, slope=${slope}`);
+                    debugLog(
+                        `Line properties: length=${length}, slope=${slope}`
+                    );
 
                     // Step 8: Update UI with results
                     debugLog("Step 8: Updating UI with results");
-                    document.getElementById("summaryTitle").textContent = `Line from (${x1}, ${y1}) to (${x2}, ${y2})`;
-                    document.getElementById("totalPoints").textContent = points.length;
+                    document.getElementById(
+                        "summaryTitle"
+                    ).textContent = `Line from (${x1}, ${y1}) to (${x2}, ${y2})`;
+                    document.getElementById("totalPoints").textContent =
+                        points.length;
                     document.getElementById("lineLength").textContent = length;
                     document.getElementById("lineSlope").textContent = slope;
-                    document.getElementById("summaryCard").style.display = "block";
+                    document.getElementById("summaryCard").style.display =
+                        "block";
 
                     // Step 9: Build results table
                     debugLog("Step 9: Building results table");
@@ -998,17 +1149,24 @@
 
                     for (let i = 0; i < points.length; i++) {
                         const currentPoint = points[i];
-                        const nextPoint = i < points.length - 1 ? points[i + 1] : null;
-                        
+                        const nextPoint =
+                            i < points.length - 1 ? points[i + 1] : null;
+
                         const nextX = nextPoint ? nextPoint.x.toFixed(2) : "—";
                         const nextY = nextPoint ? nextPoint.y.toFixed(2) : "—";
-                        const roundedCoords = `(${Math.round(currentPoint.x)}, ${Math.round(currentPoint.y)})`;
+                        const roundedCoords = `(${Math.round(
+                            currentPoint.x
+                        )}, ${Math.round(currentPoint.y)})`;
 
                         tableHTML += `
                             <tr>
                                 <td data-label="Step">${i}</td>
-                                <td data-label="Current X">${currentPoint.x.toFixed(2)}</td>
-                                <td data-label="Current Y">${currentPoint.y.toFixed(2)}</td>
+                                <td data-label="Current X">${currentPoint.x.toFixed(
+                                    2
+                                )}</td>
+                                <td data-label="Current Y">${currentPoint.y.toFixed(
+                                    2
+                                )}</td>
                                 <td data-label="Next X">${nextX}</td>
                                 <td data-label="Next Y">${nextY}</td>
                                 <td data-label="Rounded Coordinates">${roundedCoords}</td>
@@ -1022,9 +1180,13 @@
                     `;
 
                     // Update results container
-                    document.getElementById("resultsContainer").innerHTML = tableHTML;
+                    document.getElementById("resultsContainer").innerHTML =
+                        tableHTML;
 
-                    updateStatus("ready", `Successfully calculated ${points.length} points`);
+                    updateStatus(
+                        "ready",
+                        `Successfully calculated ${points.length} points`
+                    );
 
                     // Step 10: Cleanup memory
                     debugLog("Step 10: Cleaning up allocated memory");
@@ -1032,9 +1194,11 @@
                     Module._free(totalPointsPtr);
 
                     debugLog("=== DDA Calculation Completed Successfully ===");
-
                 } catch (error) {
-                    debugLog(`Fatal error during calculation: ${error.message}`, "error");
+                    debugLog(
+                        `Fatal error during calculation: ${error.message}`,
+                        "error"
+                    );
                     debugLog(`Stack trace: ${error.stack}`, "error");
                     updateStatus("error", "Error: " + error.message);
                     document.getElementById("resultsContainer").innerHTML =
@@ -1053,6 +1217,18 @@
                     "ready",
                     "Results cleared. Ready for new calculation."
                 );
+            }
+
+            // Force reload function to bypass cache
+            function forceReload() {
+                console.log("🔄 Forcing reload with cache bypass...");
+                updateStatus("Forcing WebAssembly module reload...", "info");
+
+                // Clear all cache-related variables
+                window.Module = undefined;
+
+                // Reload page with cache bypass
+                window.location.reload(true);
             }
 
             // Enhanced event listeners with debug logging

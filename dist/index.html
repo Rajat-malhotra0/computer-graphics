@@ -544,6 +544,13 @@
                         >
                             Clear Results
                         </button>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="forceReload()"
+                            title="Force reload WebAssembly module"
+                        >
+                            🔄 Force Reload
+                        </button>
                     </div>
 
                     <div class="loading-spinner" id="loadingSpinner"></div>
@@ -629,6 +636,13 @@
             }
 
             var Module = {
+                locateFile: function(path) {
+                    // Add cache-busting to WASM file
+                    if (path.endsWith('.wasm')) {
+                        return path + '?v=' + Date.now();
+                    }
+                    return path;
+                },
                 onRuntimeInitialized: function () {
                     debugLog("WebAssembly runtime initialized successfully");
                     
@@ -664,10 +678,12 @@
                         );
                     }
 
-                    updateStatus(
-                        "ready",
-                        "WebAssembly module loaded successfully!"
-                    );
+                    // Check if we have the new functions
+                    if (Module._get_dda_points_array && typeof Module._get_dda_points_array === 'function') {
+                        updateStatus("ready", "✅ Latest WebAssembly module loaded successfully!");
+                    } else {
+                        updateStatus("error", "❌ Old cached module detected. Try hard refresh (Ctrl+F5)");
+                    }
                 },
                 onAbort: function (what) {
                     debugLog(`WebAssembly aborted: ${what}`, "error");
@@ -688,7 +704,23 @@
             // Initialize debug logging
             debugLog("Page loaded, initializing...");
         </script>
-        <script src="dda.js"></script>
+        <script>
+            // Add cache-busting parameter to force fresh load
+            const cacheBuster = Date.now();
+            const script = document.createElement('script');
+            script.src = `dda.js?v=${cacheBuster}`;
+            script.onload = function() {
+                console.log('WebAssembly script loaded with cache buster');
+            };
+            script.onerror = function() {
+                console.error('Failed to load WebAssembly script, falling back to cached version');
+                // Fallback to regular script load
+                const fallbackScript = document.createElement('script');
+                fallbackScript.src = 'dda.js';
+                document.head.appendChild(fallbackScript);
+            };
+            document.head.appendChild(script);
+        </script>
         <script>
             function updateStatus(type, message) {
                 debugLog(`Status update: ${type} - ${message}`);
@@ -1053,6 +1085,18 @@
                     "ready",
                     "Results cleared. Ready for new calculation."
                 );
+            }
+
+            // Force reload function to bypass cache
+            function forceReload() {
+                console.log("🔄 Forcing reload with cache bypass...");
+                updateStatus("Forcing WebAssembly module reload...", "info");
+                
+                // Clear all cache-related variables
+                window.Module = undefined;
+                
+                // Reload page with cache bypass
+                window.location.reload(true);
             }
 
             // Enhanced event listeners with debug logging
