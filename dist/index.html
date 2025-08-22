@@ -83,10 +83,17 @@
             .input-section {
                 display: flex;
                 flex-direction: column;
-                gap: 2rem;
                 border-right: 1px solid var(--border-color);
                 padding-right: 3rem;
                 min-width: 0; /* Prevents this column from overflowing */
+            }
+
+            .input-section > * + * {
+                margin-top: 2rem;
+            }
+
+            .input-group + .input-group {
+                margin-top: 0.75rem;
             }
 
             .input-section h2 {
