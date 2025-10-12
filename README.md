@@ -15,8 +15,7 @@ High‑performance, memory‑safe, browser‑friendly implementation of the Digi
 
 ## 🔗 Live Demo
 
-> Replace with your deployed URL:
-> **https://your-app-name.netlify.app**
+> **https://computer-graphics-portal.netlify.app/**
 
 ---
 
