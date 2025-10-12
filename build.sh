@@ -20,9 +20,9 @@ echo "🔧 Preparing dist/"
 mkdir -p dist
 rm -f dist/dda.js dist/dda.wasm
 
-echo "🧪 Compiling (emcc -> dist/dda.js, dist/dda.wasm)"
-emcc main.c -o dist/dda.js \
-    -s EXPORTED_FUNCTIONS='["_get_dda_points_array","_calculate_slope","_get_point_size","_test_memory_allocation","_malloc","_free"]' \
+echo "🧪 Compiling C sources from src/ (emcc -> dist/dda.js, dist/dda.wasm)"
+emcc src/main.c src/dda.c src/bresenham.c -o dist/dda.js \
+    -s EXPORTED_FUNCTIONS='["_get_dda_points_array", "_get_bresenham_points_array", "_calculate_slope", "_get_point_size", "_test_memory_allocation", "_malloc", "_free"]' \
     -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","getValue","setValue","HEAP8","HEAP32","HEAPF32"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MODULARIZE=0 \
@@ -37,8 +37,8 @@ emcc main.c -o dist/dda.js \
     -s ASSERTIONS=1 \
     -s SAFE_HEAP=0
 
-echo "📄 Copying index.html"
-cp index.html dist/
+echo "📄 Copying frontend assets (HTML, CSS, JS)"
+cp index.html style.css script.js dist/
 
 echo "📦 Build artifacts:"
 ls -lh dist/
