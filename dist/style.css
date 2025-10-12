@@ -62,23 +62,26 @@ body {
 
 .main-content {
     display: grid;
-    /* Adjust the grid to be more precise. The first column is exactly 20%
-       and the second takes the rest of the space minus the gap. */
-    grid-template-columns: 20% 1fr;
+    /* Use a more flexible grid layout with min-width constraints */
+    grid-template-columns: minmax(300px, 400px) 1fr;
     gap: 2rem;
     padding: 2.5rem;
+    min-height: 60vh;
 }
 
 .input-section {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    min-width: 0; /* Allow flex items to shrink below their content size */
 }
 
 .results-section {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    min-width: 0; /* Allow flex items to shrink below their content size */
+    overflow: hidden; /* Prevent content from overflowing */
 }
 
 .card {
@@ -314,6 +317,29 @@ body {
     }
 }
 
+/* Additional responsive improvements */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .card {
+        padding: 1rem;
+    }
+    
+    .no-results {
+        padding: 20px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Ensure proper text wrapping for all content */
+.container {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
 .results-container {
     max-height: 500px;
     overflow-y: auto;
@@ -362,4 +388,9 @@ body {
     color: #6c757d;
     font-style: italic;
     padding: 40px 20px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.6;
+    max-width: 100%;
 }
